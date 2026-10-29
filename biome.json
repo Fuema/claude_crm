@@ -1,0 +1,83 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": [
+      "**",
+      "!src/routeTree.gen.ts",
+      "!src/generated",
+      "!.claudeServer",
+      "!.claude/agents",
+      "!.claude/skills",
+      "!bun.lock"
+    ]
+  },
+  "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 },
+  "javascript": {
+    "formatter": { "quoteStyle": "single", "semicolons": "asNeeded" }
+  },
+  "tailwind": { "stylesheet": "./src/styles.css" },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "suspicious": { "noConsole": "error", "noExplicitAny": "error" },
+      "nursery": {
+        "useTailwindSortedClasses": {
+          "level": "error",
+          "fix": "safe",
+          "options": {}
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "src/**",
+        "!src/server/**",
+        "!src/features/*/server/**",
+        "!src/routes/api/**",
+        "!src/routes/index.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/server/*", "@/generated/*", "cloudflare:*"],
+                    "message": "Server-only code: import it only from server functions, server routes, or src/server/ (docs/architecture.md)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/components/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/features/*", "@/stores/*", "@/hooks/*"],
+                    "message": "components/ is presentational: no features, stores, or app hooks (docs/architecture.md)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

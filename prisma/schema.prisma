@@ -1,0 +1,12 @@
+// Models are added per feature (see docs/data-and-api.md).
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  // Workers cannot compile WebAssembly at runtime; this imports the query
+  // compiler as a .wasm module instead (docs/data-and-api.md).
+  runtime  = "cloudflare"
+}
+
+datasource db {
+  provider = "postgresql"
+}
