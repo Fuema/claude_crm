@@ -7,15 +7,15 @@ client state, or forms.
 
 Pick the first option that fits:
 
-| Kind of state                               | Where it lives                                    |
-|---------------------------------------------|---------------------------------------------------|
-| Business data                               | **PostgreSQL** (Prisma), read through server functions |
-| Server data in the UI                       | **TanStack Query**                                |
-| State shareable by URL (filters, page, sort)| **TanStack Router** search params (Zod-validated) |
-| Form values                                 | **react-hook-form** + **Zod**                     |
-| UI state for one component                  | `useState` / `useReducer`                         |
-| Client state shared across screens          | **TanStack Store** (sidebar, theme, table density) |
-| The session                                 | Better Auth cookie, read on the server; the client gets it from `getSession` |
+| Kind of state                                | Where it lives                                                               |
+| -------------------------------------------- | ---------------------------------------------------------------------------- |
+| Business data                                | **PostgreSQL** (Prisma), read through server functions                       |
+| Server data in the UI                        | **TanStack Query**                                                           |
+| State shareable by URL (filters, page, sort) | **TanStack Router** search params (Zod-validated)                            |
+| Form values                                  | **react-hook-form** + **Zod**                                                |
+| UI state for one component                   | `useState` / `useReducer`                                                    |
+| Client state shared across screens           | **TanStack Store** (sidebar, theme, table density)                           |
+| The session                                  | Better Auth cookie, read on the server; the client gets it from `getSession` |
 
 ## Database (Prisma 7 + Neon)
 
@@ -24,6 +24,11 @@ Pick the first option that fits:
 - On Workers, the client uses the **Neon driver adapter**
   (`@prisma/adapter-neon`). Do not use `@prisma/client/edge`, Prisma
   Accelerate, or `--no-engine`.
+- The generator uses `runtime = "cloudflare"`: Workers cannot compile
+  WebAssembly at runtime, so the query compiler is imported as a `.wasm`
+  module. Vitest (Node) loads that import through a small plugin in
+  `vitest.config.ts`; keep both when upgrading Prisma.
+- Import the client from `@/generated/prisma/client`.
 - **Create the client per request** with `getDb()` (`src/server/db.ts`): a
   Worker must not reuse a database connection across requests.
 - Models: PascalCase singular (`Customer`); fields camelCase; tables mapped to
@@ -72,11 +77,9 @@ async functions; TanStack Start turns each call into an HTTP request.
 ```ts
 // features/customers/server/customer-functions.ts
 export const updateCustomer = createServerFn({ method: 'POST' })
-  .middleware([tenantMiddleware])          // session + active workspace → context
-  .inputValidator(updateCustomerSchema)     // Zod schema from types/
-  .handler(({ data, context }) =>
-    customerService.update(context.db, data),
-  )
+  .middleware([tenantMiddleware]) // session + active workspace → context
+  .inputValidator(updateCustomerSchema) // Zod schema from types/
+  .handler(({ data, context }) => customerService.update(context.db, data))
 ```
 
 - `GET` for reads, `POST` for every change.
@@ -100,9 +103,9 @@ export const updateCustomer = createServerFn({ method: 'POST' })
 
 ```ts
 class AppError extends Error {
-  code: ErrorCode;                        // see docs/project.md, Error codes
-  message: string;                        // safe to show to the user
-  details?: Record<string, string[]>;     // field errors
+  code: ErrorCode // see docs/project.md, Error codes
+  message: string // safe to show to the user
+  details?: Record<string, string[]> // field errors
 }
 ```
 
@@ -172,8 +175,8 @@ export const customerKeys = {
 
 - **Server values** (database URL, Better Auth secret, Upstash token) are
   Worker secrets or bindings, read only through `src/server/env.ts`
-  (validated with Zod). Locally they come from `.dev.vars`.
+  (validated with Zod) from `process.env` (filled by `nodejs_compat` on
+  Workers). Locally they come from `.env` (see `docs/devops.md`).
 - **Client values** are `VITE_*` variables, read only through `src/lib/env.ts`.
   They are public: never a secret.
-- Document every variable in `.dev.vars.example` / `.env.example` (no real
-  values).
+- Document every variable in `.env.example` (no real values).

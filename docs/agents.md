@@ -8,7 +8,7 @@ one job, and reports back. Use them for work that benefits from a fresh view
 ## Available Agents
 
 | Agent           | Job                                             | Can edit code? | Model  |
-|-----------------|-------------------------------------------------|----------------|--------|
+| --------------- | ----------------------------------------------- | -------------- | ------ |
 | `verifier`      | Runs type check, lint, tests, build; reports    | No             | sonnet |
 | `code-reviewer` | Independent review against project rules        | No (read-only) | opus   |
 | `docs-keeper`   | Updates docs, glossary, `*.example` files, ADRs | Docs only      | sonnet |
@@ -35,10 +35,10 @@ Implement  →  verifier  →  code-reviewer  →  docs-keeper  →  git-committ
 
 ## Agents vs Skills
 
-| Use a **skill** when…                    | Use an **agent** when…                        |
-|------------------------------------------|-----------------------------------------------|
-| You want a procedure in the current chat | You want an independent, isolated run         |
-| The work needs the conversation context  | A fresh view helps (review, verification)     |
+| Use a **skill** when…                    | Use an **agent** when…                          |
+| ---------------------------------------- | ----------------------------------------------- |
+| You want a procedure in the current chat | You want an independent, isolated run           |
+| The work needs the conversation context  | A fresh view helps (review, verification)       |
 | Tools can stay the same                  | Tools should be restricted (read-only, no push) |
 
 Agents can use skills: `code-reviewer` follows `.claude/skills/code-review/`.
@@ -58,10 +58,11 @@ Create `.claude/agents/<name>.md`:
 
 ```markdown
 ---
+
 name: <kebab-case-name>
 description: <what it does and WHEN to use it — Claude uses this to decide>
-tools: Read, Grep, Glob        # only what it needs; omit to inherit all
-model: sonnet                  # sonnet | opus | haiku | inherit
+tools: Read, Grep, Glob # only what it needs; omit to inherit all
+model: sonnet # sonnet | opus | haiku | inherit
 ---
 
 <System prompt: role, steps, rules, and the exact report format.>

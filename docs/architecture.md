@@ -98,13 +98,13 @@ features/customers/
 
 ## The Server/Client Boundary
 
-| Code                                        | Runs on        |
-|---------------------------------------------|----------------|
-| `createServerFn(...).handler(...)` body     | Server only    |
-| `src/server/**`, `features/*/server/*-service.ts` | Server only |
-| Server routes in `routes/api/`              | Server only    |
-| Route `loader` / `beforeLoad`               | **Both** (server on first load, browser on navigation) |
-| Components, hooks, stores                   | Both (SSR) — treat as client code |
+| Code                                              | Runs on                                                |
+| ------------------------------------------------- | ------------------------------------------------------ |
+| `createServerFn(...).handler(...)` body           | Server only                                            |
+| `src/server/**`, `features/*/server/*-service.ts` | Server only                                            |
+| Server routes in `routes/api/`                    | Server only                                            |
+| Route `loader` / `beforeLoad`                     | **Both** (server on first load, browser on navigation) |
+| Components, hooks, stores                         | Both (SSR) — treat as client code                      |
 
 Rules:
 
@@ -113,10 +113,11 @@ Rules:
 - Only server functions, server routes, and `src/server/` may import
   `src/server/**`, a `*-service.ts`, the Prisma client, or
   `cloudflare:workers`.
-- Code that needs to stay out of the client bundle and is not a server
-  function is marked server-only (TanStack Start's server-only helpers or an
-  import guard). <!-- TODO (step 1): pick the mechanism from the installed
-  TanStack Start version and document it here. -->
+- Biome's `noRestrictedImports` (in `biome.json`) fails `bun run check` when
+  code outside `src/server/`, `features/*/server/`, and `routes/api/` imports
+  `@/server/*`, `@/generated/*`, or `cloudflare:*`.
+- After a build, `dist/client/` must not contain Prisma, the Neon driver, or
+  `DATABASE_URL`. Check it when touching the boundary.
 - Components render on the server first: no `window`, `document`, or
   `localStorage` at render time; use effects.
 
@@ -173,8 +174,10 @@ lib           → (nothing in the app)
   tenant-scoped db) or calls the other feature's exported server function.
 - Only `features/*/server/` and `src/server/` touch the database.
 
-<!-- TODO (step 1): enforce these with Biome `noRestrictedImports` where it can
-express them. -->
+Enforced by `noRestrictedImports` overrides in `biome.json`: server-only
+imports (see above) and `components/` importing features, stores, or app
+hooks. The other rules are checked in review. <!-- TODO: cross-feature
+internals (only `index.ts`) once there are two features. -->
 
 ## Architecture Decisions
 

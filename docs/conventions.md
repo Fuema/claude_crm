@@ -4,23 +4,23 @@ Read this before writing any component, type, or style.
 
 ## Naming
 
-| Item         | Convention          | Example                              |
-|--------------|---------------------|--------------------------------------|
-| Components   | PascalCase          | `UserCard`                           |
-| Props types  | `<Component>Props`  | `UserCardProps`                      |
-| Functions    | camelCase           | `formatDate`                         |
-| Hooks        | camelCase, `use…`   | `useCustomers`                       |
-| Stores (TanStack Store) | `…Store`   | `uiPreferencesStore`, `dealBoardStore` |
-| Server functions | camelCase verb + noun | `listCustomers`, `archiveCustomer` |
-| Prisma models | PascalCase singular | `Customer`, `Deal` (table `customers`) |
-| Zod schemas  | camelCase, `…Schema` | `customerFormSchema`                |
-| Constants    | UPPER_SNAKE_CASE    | `MAX_PAGE_SIZE`                      |
-| Types        | PascalCase          | `Customer`, `CustomerListParams`            |
-| Event props  | `on…`               | `onSelect`                           |
-| Handlers     | `handle…`           | `handleSelect`                       |
-| Booleans     | `is/has/can…`       | `isLoading`, `hasError`              |
-| Route files  | TanStack Router naming | `$customerId.tsx`, `_authenticated.tsx`, `__root.tsx` |
-| Files        | kebab-case          | `customer-card.tsx`, `use-customers.ts`, `customer-functions.ts` |
+| Item                    | Convention             | Example                                                          |
+| ----------------------- | ---------------------- | ---------------------------------------------------------------- |
+| Components              | PascalCase             | `UserCard`                                                       |
+| Props types             | `<Component>Props`     | `UserCardProps`                                                  |
+| Functions               | camelCase              | `formatDate`                                                     |
+| Hooks                   | camelCase, `use…`      | `useCustomers`                                                   |
+| Stores (TanStack Store) | `…Store`               | `uiPreferencesStore`, `dealBoardStore`                           |
+| Server functions        | camelCase verb + noun  | `listCustomers`, `archiveCustomer`                               |
+| Prisma models           | PascalCase singular    | `Customer`, `Deal` (table `customers`)                           |
+| Zod schemas             | camelCase, `…Schema`   | `customerFormSchema`                                             |
+| Constants               | UPPER_SNAKE_CASE       | `MAX_PAGE_SIZE`                                                  |
+| Types                   | PascalCase             | `Customer`, `CustomerListParams`                                 |
+| Event props             | `on…`                  | `onSelect`                                                       |
+| Handlers                | `handle…`              | `handleSelect`                                                   |
+| Booleans                | `is/has/can…`          | `isLoading`, `hasError`                                          |
+| Route files             | TanStack Router naming | `$customerId.tsx`, `_authenticated.tsx`, `__root.tsx`            |
+| Files                   | kebab-case             | `customer-card.tsx`, `use-customers.ts`, `customer-functions.ts` |
 
 The file name is kebab-case even when it exports a PascalCase component.
 (shadcn/ui already generates kebab-case files, e.g. `components/ui/alert-dialog.tsx`.)
@@ -98,16 +98,16 @@ template (`claude_frontend_solution`) in step 3. Reuse them instead of
 rebuilding the same pattern in a feature. They render on the server too (SSR),
 so they never touch `window` or `document` during render.
 
-| Component                  | Use it for                                                                                |
-|-----------------------------|--------------------------------------------------------------------------------------------|
-| `PageHeader`                | The page's `<h1>` plus its actions (e.g. an "Add customer" button).                        |
-| `EmptyState`                | Saying what is missing and offering the next action, when a list has no rows.             |
-| `ErrorState`                | Reporting a load failure: `role="alert"`, a safe message, an optional "Try again" button.  |
-| `ConfirmDialog`             | Destructive confirmations. It names the record, stays open while `isPending`, and the caller closes it (`onOpenChange(false)`) only on success. |
-| `FormDialog`                | A dialog shell for a form. The feature's form gets `id={formId}`; the footer submit button uses `form={formId}`. The feature owns react-hook-form (validation, submit, closing on success). |
-| `DataTable`                 | Any server-paginated list. Import from `@/components/data-table`. See "Data table contract" below. |
-| `GenericTable`              | A small list loaded whole and searched, sorted, paged, and selected in the browser. Import from `@/components/generic-table`. See "Generic Table Contract" below. |
-| `RouteError` / `NotFound`   | Already provided by the router defaults (see `docs/architecture.md`); do not duplicate them in a feature. |
+| Component                 | Use it for                                                                                                                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PageHeader`              | The page's `<h1>` plus its actions (e.g. an "Add customer" button).                                                                                                                         |
+| `EmptyState`              | Saying what is missing and offering the next action, when a list has no rows.                                                                                                               |
+| `ErrorState`              | Reporting a load failure: `role="alert"`, a safe message, an optional "Try again" button.                                                                                                   |
+| `ConfirmDialog`           | Destructive confirmations. It names the record, stays open while `isPending`, and the caller closes it (`onOpenChange(false)`) only on success.                                             |
+| `FormDialog`              | A dialog shell for a form. The feature's form gets `id={formId}`; the footer submit button uses `form={formId}`. The feature owns react-hook-form (validation, submit, closing on success). |
+| `DataTable`               | Any server-paginated list. Import from `@/components/data-table`. See "Data table contract" below.                                                                                          |
+| `GenericTable`            | A small list loaded whole and searched, sorted, paged, and selected in the browser. Import from `@/components/generic-table`. See "Generic Table Contract" below.                           |
+| `RouteError` / `NotFound` | Already provided by the router defaults (see `docs/architecture.md`); do not duplicate them in a feature.                                                                                   |
 
 #### Data Table Contract
 
@@ -199,4 +199,4 @@ helper.display({
 - No `console.log` in committed code. Use the logger in `lib/logger.ts`
   (server logs go to Workers logs; never log personal data).
 - No commented-out code. Delete it; Git keeps history.
-- Comments explain *why*, not *what*.
+- Comments explain _why_, not _what_.

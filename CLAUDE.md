@@ -22,30 +22,30 @@ the same codebase) that runs on Cloudflare Workers.
 
 ### Technical Stack
 
-| Concern              | Technology                                   | Rules in                |
-|----------------------|----------------------------------------------|-------------------------|
-| Tooling runtime      | Bun (install, scripts). **Not** the production runtime | `docs/devops.md` |
-| Production runtime   | Cloudflare Workers (workerd)                 | `docs/devops.md`        |
-| Full-stack framework | TanStack Start (SSR, server functions)       | `docs/architecture.md`  |
-| Routing              | TanStack Router (file-based)                 | `docs/architecture.md`  |
-| Language             | TypeScript (strict)                          | `docs/conventions.md`   |
-| UI                   | React, Tailwind CSS v4, shadcn/ui (Radix UI) | `docs/conventions.md`   |
-| Lint and format      | Biome                                        | `docs/conventions.md`   |
-| Database             | Neon (serverless PostgreSQL)                 | `docs/data-and-api.md`  |
-| ORM                  | Prisma 7 with the Neon driver adapter        | `docs/data-and-api.md`  |
-| Auth                 | Better Auth (organization plugin = workspace) | `docs/security.md`     |
-| Validation           | Zod                                          | `docs/data-and-api.md`  |
-| Server state         | TanStack Query                               | `docs/data-and-api.md`  |
-| Client state         | TanStack Store                               | `docs/data-and-api.md`  |
-| Tables               | TanStack Table                               | `docs/conventions.md`   |
-| Forms                | react-hook-form                              | `docs/data-and-api.md`  |
-| Rate limit, idempotency | Upstash Redis (REST)                      | `docs/resiliency.md`    |
-| Events               | Transactional outbox + Cloudflare Queues     | `docs/resiliency.md`    |
-| Files, real-time     | Cloudflare R2, Durable Objects               | `docs/resiliency.md`    |
-| Unit / component / integration tests | Vitest + React Testing Library | `docs/quality.md` |
-| E2E tests            | Playwright + axe-core                        | `docs/quality.md`       |
-| Local infrastructure | Docker Compose, Wrangler                     | `docs/devops.md`        |
-| CI/CD                | GitHub Actions                               | `docs/devops.md`        |
+| Concern                              | Technology                                             | Rules in               |
+| ------------------------------------ | ------------------------------------------------------ | ---------------------- |
+| Tooling runtime                      | Bun (install, scripts). **Not** the production runtime | `docs/devops.md`       |
+| Production runtime                   | Cloudflare Workers (workerd)                           | `docs/devops.md`       |
+| Full-stack framework                 | TanStack Start (SSR, server functions)                 | `docs/architecture.md` |
+| Routing                              | TanStack Router (file-based)                           | `docs/architecture.md` |
+| Language                             | TypeScript (strict)                                    | `docs/conventions.md`  |
+| UI                                   | React, Tailwind CSS v4, shadcn/ui (Radix UI)           | `docs/conventions.md`  |
+| Lint and format                      | Biome                                                  | `docs/conventions.md`  |
+| Database                             | Neon (serverless PostgreSQL)                           | `docs/data-and-api.md` |
+| ORM                                  | Prisma 7 with the Neon driver adapter                  | `docs/data-and-api.md` |
+| Auth                                 | Better Auth (organization plugin = workspace)          | `docs/security.md`     |
+| Validation                           | Zod                                                    | `docs/data-and-api.md` |
+| Server state                         | TanStack Query                                         | `docs/data-and-api.md` |
+| Client state                         | TanStack Store                                         | `docs/data-and-api.md` |
+| Tables                               | TanStack Table                                         | `docs/conventions.md`  |
+| Forms                                | react-hook-form                                        | `docs/data-and-api.md` |
+| Rate limit, idempotency              | Upstash Redis (REST)                                   | `docs/resiliency.md`   |
+| Events                               | Transactional outbox + Cloudflare Queues               | `docs/resiliency.md`   |
+| Files, real-time                     | Cloudflare R2, Durable Objects                         | `docs/resiliency.md`   |
+| Unit / component / integration tests | Vitest + React Testing Library                         | `docs/quality.md`      |
+| E2E tests                            | Playwright + axe-core                                  | `docs/quality.md`      |
+| Local infrastructure                 | Docker Compose, Wrangler                               | `docs/devops.md`       |
+| CI/CD                                | GitHub Actions                                         | `docs/devops.md`       |
 
 Do not introduce alternatives to these (another UI kit, state library, ORM,
 test runner, or CSS approach) without asking.
@@ -53,22 +53,22 @@ test runner, or CSS approach) without asking.
 ## 2. Commands
 
 Run from the repository root. Use these exact commands; do not invent others.
-<!-- TODO: scripts are created in step 1 (scaffold); keep this table in sync. -->
 
-| Purpose              | Command                |
-|----------------------|------------------------|
-| Install              | `bun install`          |
-| Start local services | `bun run db:up`        |
-| Dev server           | `bun run dev`          |
-| Type check           | `bun run typecheck`    |
-| Lint + format check  | `bun run check`        |
-| Lint + format fix    | `bun run check:fix`    |
-| Unit/integration tests | `bun run test`       |
-| E2E tests            | `bun run test:e2e`     |
-| Build                | `bun run build`        |
-| New migration        | `bun run db:migrate`   |
+| Purpose                | Command               |
+| ---------------------- | --------------------- |
+| Install                | `bun install`         |
+| Start local services   | `bun run db:up`       |
+| Stop local services    | `bun run db:down`     |
+| Dev server             | `bun run dev`         |
+| Type check             | `bun run typecheck`   |
+| Lint + format check    | `bun run check`       |
+| Lint + format fix      | `bun run check:fix`   |
+| Unit/integration tests | `bun run test`        |
+| E2E tests              | `bun run test:e2e`    |
+| Build                  | `bun run build`       |
+| New migration          | `bun run db:migrate`  |
 | Generate Prisma client | `bun run db:generate` |
-| Database browser     | `bun run db:studio`    |
+| Database browser       | `bun run db:studio`   |
 
 - **`bun run test`, never `bun test`.** `bun test` starts Bun's own test runner,
   not Vitest.
@@ -90,18 +90,18 @@ Run from the repository root. Use these exact commands; do not invent others.
 
 ## 4. Read Before You Work
 
-| When the task involves…                                | Read first              |
-|--------------------------------------------------------|-------------------------|
-| **Any task** (what the app is and its domain)          | `docs/project.md`       |
+| When the task involves…                                        | Read first             |
+| -------------------------------------------------------------- | ---------------------- |
+| **Any task** (what the app is and its domain)                  | `docs/project.md`      |
 | A new feature, new folder, moving code, server/client boundary | `docs/architecture.md` |
-| Writing any component, type, or style                  | `docs/conventions.md`   |
-| Database, server functions, server data, state, forms  | `docs/data-and-api.md`  |
-| Rate limits, idempotency, outbox, queues, R2, Durable Objects | `docs/resiliency.md` |
-| Tests, UI checks, accessibility, or performance        | `docs/quality.md`       |
-| Auth, sessions, tenants, secrets, env bindings, user HTML | `docs/security.md`   |
-| Docker, Wrangler, CI, deployment, migrations in CI     | `docs/devops.md`        |
-| UI text and wording                                    | `docs/glossary.md`      |
-| Delegating to an agent, or adding one                  | `docs/agents.md`        |
+| Writing any component, type, or style                          | `docs/conventions.md`  |
+| Database, server functions, server data, state, forms          | `docs/data-and-api.md` |
+| Rate limits, idempotency, outbox, queues, R2, Durable Objects  | `docs/resiliency.md`   |
+| Tests, UI checks, accessibility, or performance                | `docs/quality.md`      |
+| Auth, sessions, tenants, secrets, env bindings, user HTML      | `docs/security.md`     |
+| Docker, Wrangler, CI, deployment, migrations in CI             | `docs/devops.md`       |
+| UI text and wording                                            | `docs/glossary.md`     |
+| Delegating to an agent, or adding one                          | `docs/agents.md`       |
 
 Specialized procedures are skills in `.claude/skills/` (code review,
 accessibility review, security review, performance audit, new feature).
@@ -174,10 +174,10 @@ A task is complete only when all of these are true:
 - [ ] Type check passes.
 - [ ] `bun run check` (Biome) passes.
 - [ ] Relevant tests pass (new behavior has tests; server functions have
-      integration tests, including a cross-tenant test).
+  integration tests, including a cross-tenant test).
 - [ ] Schema changes have a migration, and the migration was applied locally.
 - [ ] UI changes were visually verified (mobile + desktop) and meet the
-      accessibility baseline in `docs/quality.md`.
+  accessibility baseline in `docs/quality.md`.
 - [ ] No unnecessary dependencies were added.
 - [ ] No temporary or debug code remains (`console.log`, commented-out code).
 - [ ] Documentation is updated when behavior or conventions changed.

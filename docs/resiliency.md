@@ -93,7 +93,7 @@ Queue consumer ──▶ do the work ──▶ mark the row done (or retry)
   connections and broadcasts changes.
 - The object authenticates each connection with the session and checks the
   workspace before accepting it.
-- The database stays the source of truth; messages say *what changed*, and
+- The database stays the source of truth; messages say _what changed_, and
   clients refetch through TanStack Query.
 
 ## Testing These Mechanisms

@@ -6,12 +6,12 @@ If a needed term is missing there, ask before inventing one, then add it.
 
 ## User-Facing Language
 
-| Say                | Never say        | Notes                                         |
-|--------------------|------------------|-----------------------------------------------|
-| workspace          | organization     | In all UI text.                               |
-| project            | repository       | Use "repository" only when the text is specifically about Git. |
+| Say                | Never say        | Notes                                                              |
+| ------------------ | ---------------- | ------------------------------------------------------------------ |
+| workspace          | organization     | In all UI text.                                                    |
+| project            | repository       | Use "repository" only when the text is specifically about Git.     |
 | user               |                  | The person signed in to the app. Do not use it for domain records. |
-| sign in / sign out | log in / log out | <!-- TODO: confirm -->                        |
+| sign in / sign out | log in / log out | <!-- TODO: confirm -->                                             |
 
 ## Writing Style for UI Text
 

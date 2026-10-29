@@ -6,7 +6,7 @@ anything that renders user-supplied content.
 ## Secrets
 
 - Server secrets (database URL, `BETTER_AUTH_SECRET`, Upstash token) are Worker
-  secrets: `wrangler secret put` in Cloudflare, `.dev.vars` locally, GitHub
+  secrets: `wrangler secret put` in Cloudflare, `.env` locally, GitHub
   secrets in CI. Never in code, `wrangler.jsonc` `vars`, or a `VITE_*` variable.
 - Only `VITE_*` variables reach the browser, and anyone can read them.
 - Never read, print, or commit `.env*` or `.dev.vars*` files. Document them in

@@ -7,15 +7,18 @@ Read this before writing tests or verifying UI work.
 Tools: **Vitest** (run with `bun run test`, never `bun test`), React Testing
 Library, Playwright + `@axe-core/playwright`.
 
-| Type        | What                                         | Where | Environment |
-|-------------|----------------------------------------------|-------|-------------|
-| Unit        | Pure functions, Zod schemas, mappers         | Next to the file (`*.test.ts`) | Node |
-| Component   | Components, hooks, pages                     | Next to the file (`*.test.tsx`) | jsdom |
-| Integration | Feature services and middleware with a real database | `features/*/server/*.test.ts`, `src/server/**/*.test.ts` | Node + test Postgres |
-| E2E         | Critical flows in `docs/project.md` Section 7 | `src/tests/e2e/` | Browser against `bun run dev` |
+| Type        | What                                                 | Where                                                    | Environment                   |
+| ----------- | ---------------------------------------------------- | -------------------------------------------------------- | ----------------------------- |
+| Unit        | Pure functions, Zod schemas, mappers                 | Next to the file (`*.test.ts`)                           | jsdom (Node under `server/`)  |
+| Component   | Components, hooks, pages                             | Next to the file (`*.test.tsx`)                          | jsdom                         |
+| Integration | Feature services and middleware with a real database | `features/*/server/*.test.ts`, `src/server/**/*.test.ts` | Node + test Postgres          |
+| E2E         | Critical flows in `docs/project.md` Section 7        | `src/tests/e2e/`                                         | Browser against `bun run dev` |
 
-<!-- TODO (step 1): Vitest projects for jsdom vs node, and how integration
-tests reach local Postgres (Neon proxy or a pg adapter in tests). -->
+`vitest.config.ts` has two projects: **server** (Node; `src/server/**` and
+`features/*/server/**`) and **client** (jsdom; everything else). The server
+project points `DATABASE_URL` at `TEST_DATABASE_URL` (`crm_test`) in
+`src/tests/setup-server.ts`, and reaches it through the Neon proxy like the
+app does, so `bun run db:up` must be running.
 
 ## Writing Tests
 

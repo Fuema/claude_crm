@@ -16,19 +16,32 @@ deployment process.
 
 `docker-compose.yml` starts (`bun run db:up`):
 
-| Service        | Emulates            | Why it is needed |
-|----------------|---------------------|------------------|
-| `postgres` (17)| Neon                | The database. |
-| `neon-proxy`   | Neon's WebSocket endpoint | The Neon driver speaks HTTP/WebSocket, not plain TCP; the proxy lets it reach local Postgres. |
-| `redis`        | Upstash             | Rate limits and idempotency keys. |
-| `redis-rest`   | Upstash REST API    | `@upstash/redis` speaks REST, not the Redis protocol. |
+| Service            | Emulates                  | Why it is needed                                                                                          |
+| ------------------ | ------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `postgres` (17.11) | Neon                      | The database (port 5432). The Prisma CLI connects here directly.                                          |
+| `neon-proxy`       | Neon's WebSocket endpoint | The Neon driver speaks HTTP/WebSocket, not plain TCP; the proxy (port 5433) lets it reach local Postgres. |
+| `redis`            | Upstash                   | Rate limits and idempotency keys. _Added with the first rate limit._                                      |
+| `redis-rest`       | Upstash REST API          | `@upstash/redis` speaks REST, not the Redis protocol. _Added with the first rate limit._                  |
 
-- Every service has a health check; the dev script waits until they are
+- Every service has a health check; `bun run db:up` waits until they are
   healthy.
-- A separate database (`crm_test`) is used by integration tests.
-- <!-- TODO (step 1): pick and pin the proxy images, and confirm the Neon
-  driver settings for the local proxy. Alternative: a Neon dev branch instead
-  of local Postgres. -->
+- A separate database (`crm_test`, created by `docker/postgres/init.sql`) is
+  used by integration tests.
+- `getDb()` routes the Neon driver through `neon-proxy` whenever the
+  connection string's host is `localhost`, so the same `DATABASE_URL` works
+  for the app, the tests, and the Prisma CLI.
+- Images are pinned (the proxy by digest, since it only publishes `latest`).
+
+## Local Configuration (`.env`)
+
+- One local file, `.env` (copied from `.env.example`, never committed, never
+  read by Claude), serves everything:
+  - **Wrangler / the dev server** loads it into the Worker's environment.
+  - **Vitest** and the **Prisma CLI** run on Node, which does not read `.env`
+    by itself; `vitest.config.ts` and `prisma.config.ts` load it with Vite's
+    `loadEnv`. Real environment variables (CI) win over the file.
+- `bun run` loads `.env` only into Bun's own process, not into tools it starts,
+  so never rely on that.
 
 ## Wrangler
 
@@ -37,16 +50,15 @@ deployment process.
   `compatibility_flags`. Add a binding when its feature is built
   (`docs/resiliency.md`).
 - Generate binding types after changing it (`wrangler types`).
-- Local secrets live in `.dev.vars` (never committed, never read by Claude);
-  `.dev.vars.example` documents them.
+- Local values come from `.env` (see above), not `.dev.vars`.
 
 ## Environments
 
-| Environment | Database                | Deployed by |
-|-------------|-------------------------|-------------|
-| local       | Docker Postgres         | —           |
-| preview     | Neon branch per pull request | CI on pull request |
-| production  | Neon main branch        | CI on merge to `master` |
+| Environment | Database                     | Deployed by             |
+| ----------- | ---------------------------- | ----------------------- |
+| local       | Docker Postgres              | —                       |
+| preview     | Neon branch per pull request | CI on pull request      |
+| production  | Neon main branch             | CI on merge to `master` |
 
 ## CI (GitHub Actions)
 
