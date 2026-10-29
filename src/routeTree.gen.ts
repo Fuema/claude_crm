@@ -19,6 +19,8 @@ import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticate
 import { Route as AcceptInvitationInvitationIdRouteImport } from './routes/accept-invitation.$invitationId'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as WorkspacesNewRouteImport } from './routes/workspaces/new'
+import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
+import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -71,6 +73,18 @@ const WorkspacesNewRoute = WorkspacesNewRouteImport.update({
   path: '/workspaces/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCustomersIndexRoute =
+  AuthenticatedCustomersIndexRouteImport.update({
+    id: '/customers/',
+    path: '/customers/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCustomersCustomerIdRoute =
+  AuthenticatedCustomersCustomerIdRouteImport.update({
+    id: '/customers/$customerId',
+    path: '/customers/$customerId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -87,7 +101,9 @@ export interface FileRoutesByFullPath {
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/api/health': typeof ApiHealthRoute
   '/workspaces/new': typeof WorkspacesNewRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/customers/': typeof AuthenticatedCustomersIndexRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
@@ -99,7 +115,9 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/workspaces/new': typeof WorkspacesNewRoute
   '/': typeof AuthenticatedIndexRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/customers': typeof AuthenticatedCustomersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,7 +131,9 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/workspaces/new': typeof WorkspacesNewRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,7 +147,9 @@ export interface FileRouteTypes {
     | '/accept-invitation/$invitationId'
     | '/api/health'
     | '/workspaces/new'
+    | '/customers/$customerId'
     | '/api/auth/$'
+    | '/customers/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -139,7 +161,9 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/workspaces/new'
     | '/'
+    | '/customers/$customerId'
     | '/api/auth/$'
+    | '/customers'
   id:
     | '__root__'
     | '/_authenticated'
@@ -152,7 +176,9 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/workspaces/new'
     | '/_authenticated/'
+    | '/_authenticated/customers/$customerId'
     | '/api/auth/$'
+    | '/_authenticated/customers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -239,6 +265,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspacesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/customers/': {
+      id: '/_authenticated/customers/'
+      path: '/customers'
+      fullPath: '/customers/'
+      preLoaderRoute: typeof AuthenticatedCustomersIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/customers/$customerId': {
+      id: '/_authenticated/customers/$customerId'
+      path: '/customers/$customerId'
+      fullPath: '/customers/$customerId'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -252,11 +292,15 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
+  AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMembersRoute: AuthenticatedMembersRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
+  AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

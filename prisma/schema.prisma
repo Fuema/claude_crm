@@ -87,6 +87,7 @@ model Organization {
   metadata    String?
   members     Member[]
   invitations Invitation[]
+  customers   Customer[]
 
   @@unique([slug])
   @@map("organization")
@@ -121,4 +122,34 @@ model Invitation {
   @@index([organizationId])
   @@index([email])
   @@map("invitation")
+}
+
+// ── CRM ────────────────────────────────────────────────────────────────────
+// Every tenant-owned model has tenantId (the Better Auth organization) and is
+// listed in TENANT_MODELS in src/server/tenant-db.ts.
+
+enum CustomerStatus {
+  active
+  archived
+}
+
+model Customer {
+  id             String         @id @default(uuid(7))
+  tenantId       String
+  tenant         Organization   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name           String
+  /// lower(trim(name)): enforces case-insensitive uniqueness per workspace (rule 6)
+  nameNormalized String
+  industry       String?
+  website        String?
+  email          String?
+  phone          String?
+  address        String?
+  status         CustomerStatus @default(active)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@unique([tenantId, nameNormalized])
+  @@index([tenantId, status, nameNormalized])
+  @@map("customers")
 }

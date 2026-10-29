@@ -94,6 +94,11 @@ test('critical flow 3: reset a forgotten password', async ({ page }) => {
   await page.getByRole('menuitem', { name: 'Sign out' }).click()
 
   await page.getByRole('link', { name: 'Forgot your password?' }).click()
+  // Wait for the page: its code loads on demand, and typing earlier would
+  // fill the sign-in form that is still showing.
+  await expect(
+    page.getByRole('heading', { name: 'Reset your password' }),
+  ).toBeVisible()
   await page.getByLabel('Email').fill(email)
   await page.getByRole('button', { name: 'Send reset link' }).click()
   await expect(

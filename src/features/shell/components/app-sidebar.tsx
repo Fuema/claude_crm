@@ -1,5 +1,10 @@
 import { Link, type LinkProps, useMatchRoute } from '@tanstack/react-router'
-import { HomeIcon, type LucideIcon, UsersIcon } from 'lucide-react'
+import {
+  BuildingIcon,
+  HomeIcon,
+  type LucideIcon,
+  UsersIcon,
+} from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +26,7 @@ interface NavItem {
 // Each feature adds its entry here when it is built.
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Home', icon: HomeIcon },
+  { to: '/customers', label: 'Customers', icon: BuildingIcon },
   { to: '/members', label: 'Members', icon: UsersIcon },
 ]
 
@@ -39,7 +45,10 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton
                       asChild
-                      isActive={Boolean(matchRoute({ to: item.to }))}
+                      // Sections stay highlighted on their sub-pages (e.g. a customer).
+                      isActive={Boolean(
+                        matchRoute({ to: item.to, fuzzy: item.to !== '/' }),
+                      )}
                       tooltip={item.label}
                     >
                       <Link

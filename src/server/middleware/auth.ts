@@ -3,6 +3,7 @@ import { getRequestHeaders } from '@tanstack/react-start/server'
 import { AppError } from '@/lib/app-error'
 import { getAuth } from '@/server/auth'
 import { type Db, getDb } from '@/server/db'
+import { getTenantScope } from '@/server/tenant-db'
 
 export interface SessionUser {
   id: string
@@ -41,7 +42,8 @@ export const authMiddleware = createMiddleware({ type: 'function' }).server(
 
 /**
  * Requires an active workspace the user is still a member of, and puts its id
- * in the context as `tenantId`. The id comes from the server-side session,
+ * (`tenantId`) and the scoped client (`tenant`, for feature services) in the
+ * context. The id comes from the server-side session,
  * never from input (docs/security.md).
  */
 export const tenantMiddleware = createMiddleware({ type: 'function' })
@@ -52,7 +54,9 @@ export const tenantMiddleware = createMiddleware({ type: 'function' })
       context.user.id,
       context.activeWorkspaceId,
     )
-    return next({ context: { tenantId } })
+    return next({
+      context: { tenantId, tenant: getTenantScope(tenantId, context.db) },
+    })
   })
 
 export async function resolveTenantId(

@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/page-header'
 
 const authenticatedRoute = getRouteApi('/_authenticated')
 
-/** Placeholder until the first business feature (Customers) is built. */
+/** Placeholder until there is a dashboard. */
 export function HomePage() {
   const { shell, workspace } = authenticatedRoute.useRouteContext()
   return (
@@ -13,11 +13,15 @@ export function HomePage() {
         description={`You are working in ${workspace.name}.`}
       />
       <p>
-        Customers, deals, and activities come next. Meanwhile, you can{' '}
+        Start with your{' '}
+        <Link to="/customers" className="underline underline-offset-4">
+          customers
+        </Link>
+        , or{' '}
         <Link to="/members" className="underline underline-offset-4">
           invite your colleagues
         </Link>
-        .
+        . Deals and activities come next.
       </p>
     </>
   )

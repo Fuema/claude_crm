@@ -14,6 +14,10 @@ declare module '@tanstack/table-core' {
     onEditRow?: (row: TData) => void
     /** Asks to delete a row, e.g. from a row actions menu. */
     onDeleteRow?: (row: TData) => void
+    /** Asks to archive a row, e.g. from a row actions menu. */
+    onArchiveRow?: (row: TData) => void
+    /** Restores an archived row, e.g. from a row actions menu. */
+    onRestoreRow?: (row: TData) => void
   }
 }
 

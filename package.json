@@ -14,7 +14,7 @@
     "test:e2e": "playwright test",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
-    "db:migrate": "prisma migrate dev && prisma generate",
+    "db:migrate": "bun scripts/db-migrate.ts",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
