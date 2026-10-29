@@ -62,7 +62,8 @@ in sync with `docs/project.md` (Section 1).
 - Use the theme tokens shadcn/ui defines (`bg-background`, `text-foreground`,
   `bg-primary`, `text-muted-foreground`, `border`, `ring`, `rounded-md`…).
   Never hardcode colors (`#3b82f6`, `bg-blue-500`) or arbitrary values
-  (`p-[13px]`) unless there is no token for it.
+  (`p-[13px]`) unless there is no token for it. Biome's `noTailwindRawColors`
+  fails `bun run check` on raw palette colors.
 - Combine conditional classes with `cn()` from `lib/utils.ts` (re-exports the
   `cn` package, shadcn's replacement for clsx + tailwind-merge). Never build
   class strings with template literals.
@@ -82,6 +83,8 @@ in sync with `docs/project.md` (Section 1).
 - shadcn/ui components live in `src/components/ui/` and are added with the
   CLI: `bunx --bun shadcn@latest add <component>`. **Ask before adding one**, since
   it can add dependencies.
+- `components/ui/` is not linted (kept as the CLI ships it, as in the frontend
+  template) but is formatted by Biome; run `bun run check:fix` after `shadcn add`.
 - Treat `components/ui/` as a shared design system: change a primitive only
   for a project-wide reason, never for one screen. For one-off variations,
   pass `className` or wrap the primitive in a new component outside `ui/`.
@@ -94,9 +97,10 @@ in sync with `docs/project.md` (Section 1).
 ### Shared App Components
 
 `src/components/` holds these shared components, copied from the frontend
-template (`claude_frontend_solution`) in step 3. Reuse them instead of
-rebuilding the same pattern in a feature. They render on the server too (SSR),
-so they never touch `window` or `document` during render.
+template (`claude_frontend_solution`). Reuse them instead of rebuilding the
+same pattern in a feature. They render on the server too (SSR), so they never
+touch `window` or `document` during render; a `useSyncExternalStore` always
+gets a `getServerSnapshot` (see `hooks/use-mobile.ts`).
 
 | Component                 | Use it for                                                                                                                                                                                  |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -195,7 +199,9 @@ helper.display({
 
 - Code is linted and formatted with Biome (`bun run check:fix`; `bun run check`
   in CI). Do not hand-format or debate style Biome already decides. Tailwind
-  classes are sorted by Biome's `useSortedClasses` rule.
+  classes are sorted by Biome's `useTailwindSortedClasses` rule.
+- A rule may be silenced only for deliberate code, with the reason:
+  `// biome-ignore lint/<group>/<rule>: <why>`.
 - No `console.log` in committed code. Use the logger in `lib/logger.ts`
   (server logs go to Workers logs; never log personal data).
 - No commented-out code. Delete it; Git keeps history.
