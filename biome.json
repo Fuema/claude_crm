@@ -62,7 +62,7 @@
         "!src/server/**",
         "!src/features/*/server/**",
         "!src/routes/api/**",
-        "!src/routes/index.tsx"
+        "!src/tests/**"
       ],
       "linter": {
         "rules": {

@@ -35,7 +35,7 @@ export default defineConfig({
   plugins: [wasmModuleImports(), viteReact()],
   test: {
     globals: true,
-    env: { TEST_DATABASE_URL: env.TEST_DATABASE_URL ?? '' },
+    env,
     projects: [
       {
         extends: true,
@@ -46,7 +46,10 @@ export default defineConfig({
             'src/server/**/*.test.ts',
             'src/features/*/server/**/*.test.ts',
           ],
+          globalSetup: ['src/tests/global-setup-server.ts'],
           setupFiles: ['src/tests/setup-server.ts'],
+          // Integration tests share one database; run files one at a time.
+          fileParallelism: false,
         },
       },
       {

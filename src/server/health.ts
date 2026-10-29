@@ -1,12 +1,7 @@
-import { createServerFn } from '@tanstack/react-start'
 import { logger } from '@/lib/logger'
-import { type Db, getDb } from '@/server/db'
+import type { Db } from '@/server/db'
 
 export type DatabaseStatus = 'connected' | 'unavailable'
-
-export interface Health {
-  database: DatabaseStatus
-}
 
 export async function checkDatabase(db: Db): Promise<DatabaseStatus> {
   try {
@@ -19,8 +14,3 @@ export async function checkDatabase(db: Db): Promise<DatabaseStatus> {
     await db.$disconnect()
   }
 }
-
-/** The only server function that needs no session (docs/security.md). */
-export const getHealth = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<Health> => ({ database: await checkDatabase(getDb()) }),
-)
