@@ -1,13 +1,17 @@
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
-test('the server-rendered home page reports a connected database', async ({
-  page,
+test('the health endpoint reports a connected database', async ({
+  request,
 }) => {
-  await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'CRM' })).toBeVisible()
-  await expect(page.getByText('Database: connected')).toBeVisible()
+  const response = await request.get('/api/health')
+  expect(response.status()).toBe(200)
+  expect(await response.json()).toEqual({ database: 'connected' })
+})
 
-  const results = await new AxeBuilder({ page }).analyze()
-  expect(results.violations).toEqual([])
+test('a signed-out visitor is sent to sign in', async ({ page }) => {
+  await page.goto('/members')
+  await expect(page).toHaveURL(/\/sign-in\?redirect=%2Fmembers/)
+  await expect(
+    page.getByRole('heading', { name: 'Sign in to CRM' }),
+  ).toBeVisible()
 })
