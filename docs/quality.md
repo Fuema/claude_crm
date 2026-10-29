@@ -18,7 +18,9 @@ Library, Playwright + `@axe-core/playwright`.
 `features/*/server/**`) and **client** (jsdom; everything else). The server
 project points `DATABASE_URL` at `TEST_DATABASE_URL` (`crm_test`) in
 `src/tests/setup-server.ts`, and reaches it through the Neon proxy like the
-app does, so `bun run db:up` must be running.
+app does, so `bun run db:up` must be running. Before the server project runs,
+`src/tests/global-setup-server.ts` applies the migrations to `crm_test` and
+empties every table; server test files then run one at a time.
 
 ## Writing Tests
 
@@ -41,10 +43,12 @@ Rules:
 
 - Test the **service** with a tenant-scoped db; test middleware separately.
   No HTTP needed.
-- Each test file gets a clean database state (truncate tenant tables or run
-  each test in a rolled-back transaction).
-- Create data with factories in `src/tests/factories/`
-  (`createTenant()`, `createCustomer(db, overrides)`).
+- The database is emptied once per run, so every test creates its own data
+  with unique emails and never depends on other tests' rows.
+- `src/tests/auth-test-kit.ts`: `createAuthTestKit()` (Better Auth on the test
+  database, emails captured in `sentEmails`) and `createSignedInUser(kit, {
+  workspaceName })` (a verified user with session headers). Feature factories
+  (`createCustomer(db, overrides)`) go in `src/tests/factories/`.
 - **Every feature has a cross-tenant test.**
 - Test every business rule and error code in `docs/project.md` Section 6 that
   the feature owns.
@@ -73,6 +77,15 @@ For significant UI changes:
   with an axe scan on each page it visits.
 - Select elements by role or label, never by CSS class.
 - Tests are independent: each signs up or uses its own seeded workspace.
+- Import `test` and helpers from `src/tests/e2e/fixtures.ts`:
+  - `test` gives every page its own client IP, so the per-IP auth rate
+    limit does not count other tests (use `useOwnClientIp` for extra pages).
+  - `open(page, url)` for full page loads: it waits for hydration, so typing
+    is not reset and clicks are not lost.
+  - `goToNav(page, name)` opens the mobile sidebar when needed.
+  - `linkFromEmail(request, to, subject)` reads the link from Mailpit.
+  - `signUpAndVerify(page, …)` ends signed in on the home page.
+- Both projects run: `desktop` (Chrome) and `mobile` (Pixel 7).
 
 ## Accessibility Baseline
 

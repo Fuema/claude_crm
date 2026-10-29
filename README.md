@@ -10,9 +10,9 @@ with Neon PostgreSQL through Prisma and Better Auth.
 
 ## Status
 
-Scaffolded, with the shared UI components in place: the app renders on the
-server in workerd and reaches Postgres through Prisma (a placeholder page
-shows the database status). Auth and workspaces come next (step 2b).
+Sign-up with email verification, sign-in, password reset, workspaces, and
+invitations work end to end. The first business feature, Customers, comes
+next (step 4).
 
 ## Build Plan
 
@@ -21,7 +21,7 @@ shows the database status). Auth and workspaces come next (step 2b).
 | 0    | Rules: `CLAUDE.md`, `docs/`, `.claude/`                                       | Done    |
 | 1    | Scaffold: TanStack Start, Biome, Vitest, Playwright, Prisma, Docker, Wrangler | Done    |
 | 2a   | Shared components copied from the frontend template (was step 3)              | Done    |
-| 2b   | App shell, Better Auth, workspaces, invitations, email, rate limits           | Planned |
+| 2b   | App shell, Better Auth, workspaces, invitations, email, rate limits           | Done    |
 | 4    | Customers, the reference feature, end to end                                  | Planned |
 | 5    | Contacts, Deals, Activities, Invoices                                         | Planned |
 | 6    | CI/CD and first deployment                                                    | Planned |

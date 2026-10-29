@@ -9,20 +9,32 @@ built. Record that in the section's **Status**.
 
 ## Rate Limiting (Upstash Redis)
 
-**Status:** planned — first user: sign-in and sign-up.
+**Status:** active — sign-up, sign-in, password reset, and resending the
+verification link (docs/project.md, rule 23).
 
-- `@upstash/ratelimit` + `@upstash/redis` over **REST** (works in Workers; no
-  TCP connection).
-- Applied as server-function middleware (`rateLimitMiddleware`) and in the
-  Better Auth handler for sign-in and sign-up.
-- Keys: per user and workspace for server functions (`rl:fn:<tenantId>:<userId>`),
-  per IP for anonymous auth routes (`rl:auth:<ip>`, IP from `CF-Connecting-IP`).
+- `@upstash/redis` over **REST** (works in Workers; no TCP connection), with
+  our own fixed one-minute window in `src/server/rate-limit.ts`: `INCR` plus
+  `EXPIRE` in one transaction per `rl:auth:<ip>:<minute>` key.
+  `@upstash/ratelimit` is not used: its Lua scripts need an Upstash-only flag
+  and fail on any other Redis (ADR 0003).
+- Applied in the `signUpWithWorkspace` server function and in the Better Auth
+  route (`src/routes/api/auth/$.ts`) for its sign-in, sign-up, password reset,
+  and verification email endpoints. That route answers `429` with
+  `{ code: 'RATE_LIMITED', message }`.
+- The IP is `CF-Connecting-IP`. Only when it is a loopback address (local
+  development) is `X-Forwarded-For` used, so E2E tests can act as different
+  clients; in production `X-Forwarded-For` is never trusted.
 - Over the limit → `AppError('RATE_LIMITED')`, shown as "Too many attempts.
   Wait a minute and try again."
 - If Redis is unreachable, the request **is allowed** and the failure is
-  logged (fail open). <!-- TODO: confirm fail-open for auth routes. -->
-- Limits live in one place (`src/server/middleware/rate-limit.ts`).
-  <!-- TODO: decide limits per route. -->
+  logged (fail open, rule 23).
+- Per-user limits for server functions come later, with the first feature
+  that needs them. <!-- TODO -->
+
+### Testing
+
+The integration tests run against the local Redis REST emulator; they would
+fail if the limiter silently allowed everything (which fail-open could hide).
 
 ## Idempotency
 
@@ -47,6 +59,9 @@ built. Record that in the section's **Status**.
 ## Transactional Outbox
 
 **Status:** planned — first user: <!-- TODO: e.g. invoice issued → email -->
+
+**Exception:** Better Auth sends its own emails (verification, password reset,
+invitation) during the request; see `docs/security.md`.
 
 Use it when a change must cause something outside the database (an email, a
 webhook, a search index update). Never call the outside service inside the

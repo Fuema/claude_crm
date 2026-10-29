@@ -75,12 +75,24 @@ Server functions are the app's API. The client imports and calls them like
 async functions; TanStack Start turns each call into an HTTP request.
 
 ```ts
-// features/customers/server/customer-functions.ts
-export const updateCustomer = createServerFn({ method: 'POST' })
+// features/workspaces/server/workspace-functions.ts (the pattern)
+export const inviteMemberFn = createServerFn({ method: 'POST' })
   .middleware([tenantMiddleware]) // session + active workspace → context
-  .inputValidator(updateCustomerSchema) // Zod schema from types/
-  .handler(({ data, context }) => customerService.update(context.db, data))
+  .validator(validateInput(inviteMemberSchema)) // Zod schema from types/
+  .handler(({ data, context }) =>
+    inviteMember(context.auth, context.headers, context.tenantId, data.email),
+  )
 ```
+
+- Always wrap the schema in `validateInput(schema)` (`src/server/validate.ts`).
+  A raw Zod schema in `.validator()` rejects with a plain Error holding the
+  issues as JSON; `validateInput` rejects with `VALIDATION_FAILED` and field
+  errors.
+- Middleware context: `authMiddleware` gives `{ auth, db, headers, user,
+  activeWorkspaceId }`; `tenantMiddleware` adds `tenantId` after checking the
+  user is still a member of the active workspace.
+- Call server functions from components through `useServerFn(fn)` inside a
+  feature hook; loaders and `beforeLoad` may call them directly.
 
 - `GET` for reads, `POST` for every change.
 - **Every function** uses `tenantMiddleware` (or `authMiddleware` for the
@@ -94,12 +106,13 @@ export const updateCustomer = createServerFn({ method: 'POST' })
   internal columns (`tenantId`, `nameNormalized`) never reach the client.
 - Lists return `{ items, total, page, pageSize }`. Paging, sorting, and search
   happen in the database.
-- Middleware API names (`createMiddleware`, `inputValidator`) follow the
-  installed TanStack Start version; check its types if unsure.
+- Middleware and validator API names (`createMiddleware`, `.validator`) follow
+  the installed TanStack Start version; check its types if unsure.
 
 ## Errors
 
-- Business failures throw `AppError` (`src/server/errors.ts`):
+- Business failures throw `AppError` (`src/lib/app-error.ts`, shared by server
+  and client):
 
 ```ts
 class AppError extends Error {
@@ -109,13 +122,20 @@ class AppError extends Error {
 }
 ```
 
-- Zod failures in `inputValidator` are turned into `VALIDATION_FAILED` with
-  `details` by a shared middleware.
+- `src/start.ts` registers a serialization adapter, so an `AppError` thrown in
+  a server function arrives in the browser as an `AppError` with its `code`
+  and `details`.
+- Zod failures are turned into `VALIDATION_FAILED` with `details` by
+  `validateInput`.
 - Prisma errors are mapped in the service: unique violation (`P2002`) → the
   matching business code (`NAME_TAKEN`); record not found → `NOT_FOUND`.
-- Unknown errors are logged on the server with context and reach the client as
-  a generic message. Never send stack traces or SQL to the client.
-- On the client, `isAppError(error)` narrows the error for forms and toasts.
+  Better Auth errors are mapped by their code (`betterAuthErrorCode`).
+- `errorMiddleware` (global, in `src/start.ts`) logs every other error on the
+  server and replaces it with `INTERNAL` and a generic message. Never send
+  stack traces or SQL to the client.
+- On the client, `errorMessage(error)` (`lib/error-message.ts`) gives the text
+  to show, including our wording for Better Auth client errors; forms use
+  `showSubmitError` (`lib/form-errors.ts`) to put `details` on their fields.
 - Never swallow errors. Preserve the original with `cause`.
 
 ## Queries and Mutations (client)
@@ -164,7 +184,7 @@ export const customerKeys = {
 
 - One Zod schema per form in the feature's `types/`. The **same schema**
   validates on the client (`zodResolver`) and in the server function
-  (`inputValidator`).
+  (`validateInput` in the `.validator()`).
 - Build forms with shadcn/ui `Field`, `FieldLabel`, `FieldError`, driven by
   react-hook-form's `Controller` (as in the frontend template).
 - Same form component for create and edit; `defaultValues` for edit.

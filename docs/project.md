@@ -30,10 +30,14 @@ start of every task.
 - **Database:** Neon PostgreSQL through Prisma 7. Local development uses
   Docker (see `docs/devops.md`).
 - **Authentication:** Better Auth, email and password, session in an httpOnly
-  cookie. <!-- TODO: social sign-in? email verification? password reset by
-  email (needs an email provider)? -->
-- **Workspaces:** Better Auth organization plugin. <!-- TODO: how is a
-  workspace created: by any user at sign-up, or only by invitation? -->
+  cookie. Email verification and password reset by email (rules 15–17).
+  <!-- TODO: social sign-in? -->
+- **Workspaces:** Better Auth organization plugin. Created at sign-up; others
+  join by invitation (rules 18–22).
+- **Email:** Resend's REST API in production; Mailpit locally
+  (`http://localhost:8025`). Needs a sending domain verified in Resend before
+  the first deployment. <!-- TODO: sending domain and from address -->
+- **Rate limits:** sign-up, sign-in, and password reset requests (rule 23).
 - **Error format:** Server functions throw `AppError` with a code from
   Section 6's codes (see `docs/data-and-api.md`).
 - **Environments:** local, preview (per pull request), production.
@@ -119,8 +123,9 @@ likely use of R2. -->
 
 | Feature    | Folder                     | Status  | Notes                                                                                                                                       |
 | ---------- | -------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shell      | `src/features/shell/`      | Planned | App layout (header, sidebar, skip link, workspace switcher). Not a business feature                                                         |
-| Auth       | `src/features/auth/`       | Planned | Sign up, sign in, sign out, session restore, active workspace                                                                               |
+| Shell      | `src/features/shell/`      | Done    | App layout (header, sidebar, skip link, workspace switcher, user menu). Not a business feature. Dark mode deferred                          |
+| Auth       | `src/features/auth/`       | Done    | Sign up (creates a workspace), email verification, sign in, sign out, password reset, session restore                                       |
+| Workspaces | `src/features/workspaces/` | Done    | Active workspace and switcher, create a workspace, members page, invite by email, accept an invitation                                      |
 | Customers  | `src/features/customers/`  | Planned | Build order 1, **reference feature**. List (search by name, status filter, sort by name, paginate), details, create, edit, archive, restore |
 | Contacts   | `src/features/contacts/`   | Planned | Build order 2. A Contacts section on the customer details page: list (search, sort), add, edit, delete                                      |
 | Deals      | `src/features/deals/`      | Planned | Build order 3. List, details with a stage control, create, edit, delete, Deals section on the customer page, pipeline board                 |
@@ -166,28 +171,61 @@ Do not invent rules that are not listed here; ask and add them.
     deleting the contact leaves the deal without one.
 14. <!-- TODO: uniqueness rules for Activities and Invoices -->
 
+### Accounts and workspaces
+
+15. **Email must be verified before the first sign-in.** Sign-up ends with
+    "Check your email"; the link signs the user in. Signing in unverified
+    shows a message and offers to send the link again.
+16. **Passwords have at least 8 characters.** Email is unique across the
+    whole CRM (one account per person, many workspaces). Sign-up never reveals
+    whether an email already has an account: it always ends with "Check your
+    email", and the existing account's owner gets a notice ("Someone tried to
+    sign up with your email") instead of a second account.
+17. **Password reset** is requested by email; the answer never reveals whether
+    the account exists. The reset link expires after 1 hour.
+18. **Sign-up creates a workspace** with the name the user enters; the user
+    becomes its owner. A user who signs up from an invitation link is not asked
+    for a workspace name.
+19. **Any member may invite** others by email (no roles yet, rule 1). Invited
+    users join as members. An invitation expires after 48 hours and can be
+    accepted only by a signed-in user with the invited email.
+20. **A user may belong to several workspaces** and works in one at a time
+    (the active workspace, kept in the session). The header switches it. A
+    signed-in user with no workspace is asked to create one.
+21. **A user can create another workspace** at any time and becomes its owner.
+22. Removing a member, leaving a workspace, and canceling an invitation come
+    later. <!-- TODO -->
+23. **Rate limits:** at most 10 sign-up, sign-in, or password reset requests
+    per minute per IP address (`RATE_LIMITED`: "Too many attempts. Wait a
+    minute and try again."). If the rate-limit store is unreachable, requests
+    are allowed and the failure is logged.
+
 ### Error codes
 
-| Code                  | When                                                            |
-| --------------------- | --------------------------------------------------------------- |
-| `UNAUTHENTICATED`     | No valid session.                                               |
-| `NO_ACTIVE_WORKSPACE` | Signed in, but no active workspace is selected.                 |
-| `NOT_FOUND`           | The record does not exist **in the active workspace**.          |
-| `VALIDATION_FAILED`   | Input failed validation; `details` holds field errors.          |
-| `NAME_TAKEN`          | Customer name already used in the workspace.                    |
-| `CUSTOMER_ARCHIVED`   | Change attempted on an archived customer or its contacts/deals. |
-| `RATE_LIMITED`        | Too many requests (see `docs/resiliency.md`).                   |
-| `CONFLICT`            | Same `Idempotency-Key` reused with a different request.         |
+| Code                  | When                                                                            |
+| --------------------- | ------------------------------------------------------------------------------- |
+| `UNAUTHENTICATED`     | No valid session.                                                               |
+| `NO_ACTIVE_WORKSPACE` | Signed in, but no active workspace is selected.                                 |
+| `NOT_FOUND`           | The record does not exist **in the active workspace**.                          |
+| `VALIDATION_FAILED`   | Input failed validation; `details` holds field errors.                          |
+| `NAME_TAKEN`          | Customer name already used in the workspace.                                    |
+| `CUSTOMER_ARCHIVED`   | Change attempted on an archived customer or its contacts/deals.                 |
+| `RATE_LIMITED`        | Too many requests (see `docs/resiliency.md`).                                   |
+| `CONFLICT`            | Same `Idempotency-Key` reused with a different request.                         |
+| `INTERNAL`            | An unexpected failure; the message is generic, details are only in server logs. |
 
 ## 7. Critical User Flows (E2E)
 
 Each flow has a Playwright test (see `docs/quality.md`).
 
-1. Sign up, sign in, and sign out.
-2. A user of workspace A cannot see workspace B's customers (two seeded
-   workspaces).
-3. Create and edit a customer (including validation errors), archive and
+1. Sign up (with email verification), sign out, and sign in.
+2. Invite a member: the invited person signs up from the email, accepts, and
+   sees the workspace; the members page lists both.
+3. Reset a forgotten password.
+4. A user of workspace A cannot see workspace B's customers (two seeded
+   workspaces). _(With Customers.)_
+5. Create and edit a customer (including validation errors), archive and
    restore it.
-4. Add a contact to a customer.
-5. Create a deal and move it through its stages.
-6. Create an invoice. _(Planned with Invoices.)_
+6. Add a contact to a customer.
+7. Create a deal and move it through its stages.
+8. Create an invoice. _(Planned with Invoices.)_

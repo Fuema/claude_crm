@@ -112,6 +112,8 @@ gets a `getServerSnapshot` (see `hooks/use-mobile.ts`).
 | `DataTable`               | Any server-paginated list. Import from `@/components/data-table`. See "Data table contract" below.                                                                                          |
 | `GenericTable`            | A small list loaded whole and searched, sorted, paged, and selected in the browser. Import from `@/components/generic-table`. See "Generic Table Contract" below.                           |
 | `RouteError` / `NotFound` | Already provided by the router defaults (see `docs/architecture.md`); do not duplicate them in a feature.                                                                                   |
+| `TextField`               | A labelled text input bound to a react-hook-form field (label, description, and error linked).                                                                                              |
+| `CenteredCard`            | A page outside the app shell (sign-in, sign-up, invitations): one card, as the page's `<main>`.                                                                                             |
 
 #### Data Table Contract
 

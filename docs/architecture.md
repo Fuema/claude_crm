@@ -46,6 +46,7 @@ claude_crm/
     ├── generated/           Generated Prisma client (never edit)
     ├── tests/               Test helpers, factories, E2E specs (`tests/e2e/`)
     ├── router.tsx           Router factory (QueryClient in context, defaults)
+    ├── start.ts             TanStack Start options: AppError serialization, global errorMiddleware
     └── routeTree.gen.ts     Generated route tree (never edit)
 ```
 
@@ -54,13 +55,20 @@ claude_crm/
 ```
 server/
 ├── db.ts              Prisma client factory (Neon adapter), `getDb()`
-├── tenant-db.ts       `getTenantDb(tenantId)`: Prisma client scoped to one workspace
-├── auth.ts            Better Auth instance (`getAuth()`), organization plugin
-├── env.ts             Typed access to Worker bindings and secrets, validated with Zod
-├── errors.ts          `AppError` and error codes
-├── middleware/        Server-function middleware: session, tenant, rate limit, idempotency
-├── outbox/            `enqueueEvent(tx, …)`, relay (Cron Trigger), queue consumer
-└── worker.ts          Worker entry additions: `scheduled` and `queue` handlers, Durable Object classes
+├── tenant-db.ts       `getTenantDb(tenantId)`: Prisma client scoped to one workspace (with Customers)
+├── auth.ts            Better Auth config (`createAuth`, `getAuth(db)`): email/password, organization plugin
+├── auth-roles.ts      Workspace roles (owner, admin, member who may invite)
+├── better-auth-errors.ts  `betterAuthErrorCode(error)`
+├── env.ts             Server environment, validated with Zod
+├── email.ts           `createEmailSender`: Resend in production, Mailpit locally
+├── email-templates.ts Verification, reset, invitation, existing-account emails
+├── rate-limit.ts      Per-IP auth rate limit (fixed window on Upstash Redis), `clientIp`
+├── validate.ts        `validateInput(schema)` for server-function validators
+├── workspaces.ts      `createOwnedWorkspace`, `workspaceSlug` (used by two features)
+├── health.ts          `checkDatabase` for `/api/health`
+├── middleware/        `errorMiddleware` (global), `authMiddleware`, `tenantMiddleware`
+├── outbox/            `enqueueEvent(tx, …)`, relay (Cron Trigger), queue consumer (later)
+└── worker.ts          Worker entry additions: `scheduled` and `queue` handlers (later)
 ```
 
 ## Feature Folder Layout
@@ -127,16 +135,19 @@ Rules:
 
 ```
 routes/
-├── __root.tsx              Root: HTML shell, providers, router context { queryClient }
-├── sign-in.tsx, sign-up.tsx
-├── _authenticated.tsx      Layout: beforeLoad requires a session and an active workspace
+├── __root.tsx                  Root: HTML shell, toaster, tooltips, router context { queryClient }
+├── sign-in.tsx, sign-up.tsx    Outside the app shell
+├── forgot-password.tsx, reset-password.tsx
+├── accept-invitation.$invitationId.tsx
+├── workspaces/new.tsx          Needs a session, not a workspace
+├── _authenticated.tsx          Layout: beforeLoad requires a session and an active workspace
 ├── _authenticated/
-│   ├── index.tsx           /
-│   └── customers/
-│       ├── index.tsx       /customers
-│       └── $customerId.tsx /customers/:customerId
+│   ├── index.tsx               /
+│   ├── members.tsx             /members
+│   └── customers/              (step 4)
 └── api/
-    └── auth/$.ts           Better Auth handler (GET + POST)
+    ├── auth/$.ts               Better Auth handler (GET + POST), rate-limited auth endpoints
+    └── health.ts               GET /api/health
 ```
 
 - **Route files are thin.** They declare the route (`validateSearch`, `loader`,

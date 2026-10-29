@@ -13,7 +13,7 @@ description: Review a diff, branch, or set of files against this project's rules
 | Scope         | Only what the task needed; no unrelated changes              | `CLAUDE.md` §3          |
 | Tenancy       | Services use `getTenantDb`; `tenantId` only from the session; other workspaces' records are `NOT_FOUND`; cross-tenant test exists | `docs/data-and-api.md`, `docs/security.md` |
 | Server boundary | Prisma, secrets, bindings only in server functions / `src/server/` / `*-service.ts`; `types/` imports nothing server-only; loaders call server functions | `docs/architecture.md` |
-| Server functions | Zod `inputValidator`, tenant middleware, `POST` for changes, models returned (not Prisma rows), idempotency where required | `docs/data-and-api.md` |
+| Server functions | `.validator(validateInput(schema))`, tenant middleware, `POST` for changes, models returned (not Prisma rows), idempotency where required | `docs/data-and-api.md` |
 | Database      | Migration added and not edited after apply; `tenantId` indexes; per-workspace unique constraints; `Decimal` for money; no N+1 | `docs/data-and-api.md` |
 | Resiliency    | Outside effects go through the outbox; consumers idempotent; rate limits on auth | `docs/resiliency.md` |
 | Runtime       | No Bun-only APIs; no `window`/`document` during render (SSR) | `CLAUDE.md` §5, `docs/architecture.md` |

@@ -21,21 +21,40 @@ anything that renders user-supplied content.
   Start cookie plugin).
 - The auth tables (`user`, `session`, `account`, `verification`, `organization`,
   `member`, `invitation`) are part of `prisma/schema.prisma`, generated with
-  the Better Auth CLI and migrated like any other table.
-- The client uses Better Auth's React client only for sign-in, sign-up,
-  sign-out, and switching workspace. Everything else goes through server
-  functions.
-- Sign-in and sign-up are rate-limited (`docs/resiliency.md`).
-- Passwords: Better Auth's hashing; minimum length 8 (Better Auth default).
-  <!-- TODO: confirm password policy. -->
+  the Better Auth CLI from `scripts/better-auth.config.ts` and migrated like
+  any other table. Regenerate them after changing Better Auth plugins.
+- The browser uses Better Auth's client (`lib/auth-client.ts`) only for
+  sign-in, sign-out, password reset, and resending the verification email.
+  Sign-up (it also creates the workspace) and everything about workspaces go
+  through server functions.
+- **No account enumeration:** sign-up, password reset, and resending the
+  verification link answer the same whether or not the email has an account
+  (rules 16–17). Sign-in says only "The email or password is not correct."
+- Sign-up, sign-in, password reset, and resending the verification link are
+  rate-limited per IP (`docs/resiliency.md`).
+- Passwords: Better Auth's hashing; 8 to 128 characters. Resetting a password
+  signs out every other session.
+- Forms use `method="post"`, so a submit before the page has hydrated never
+  puts a password in the URL.
+- Auth emails (verification, reset, invitation) are sent by Better Auth during
+  the request, not through the outbox. A failed verification or reset email is
+  logged and can be requested again; a failed invitation email fails the
+  invitation so the inviter can retry.
+
+## Workspace Roles
+
+- Better Auth's organization roles: `owner` (creator), `admin`, `member`
+  (`src/server/auth-roles.ts`). The CRM's `member` role adds
+  `invitation: create` (rule 19); `auth-roles.test.ts` pins every role's
+  permissions. Nothing else differs between roles yet (rule 1).
 
 ## Authorization and Tenant Isolation
 
 - **The server decides.** Hiding a button is not authorization.
 - `tenantMiddleware` reads the session from the request cookie, requires an
   active workspace (`session.activeOrganizationId`), checks that the user is a
-  member of it, and puts `{ user, tenantId, db: getTenantDb(tenantId) }` in the
-  context.
+  member of it, and puts the `tenantId` in the context (`getTenantDb` follows
+  with the first tenant-owned table, Customers).
 - The `tenantId` **never** comes from input, URL, or a header.
 - Records in another workspace are `NOT_FOUND` (do not reveal they exist).
 - Object storage keys, Redis keys, Durable Object names, and outbox events all
