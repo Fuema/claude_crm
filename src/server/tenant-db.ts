@@ -5,7 +5,10 @@ import { type Db, getDb } from '@/server/db'
  * `tenantId`: added to `where` for reads, updates, and deletes, and to `data`
  * for creates. Add each new tenant-owned model here.
  */
-export const TENANT_MODELS: ReadonlySet<string> = new Set(['Customer'])
+export const TENANT_MODELS: ReadonlySet<string> = new Set([
+  'Customer',
+  'Contact',
+])
 
 const WHERE_OPERATIONS = new Set([
   'findUnique',

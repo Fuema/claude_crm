@@ -41,17 +41,23 @@ describe('createIdempotencyStore', () => {
   it('rejects a second request while the first is still running', async () => {
     const key = newKey()
     let finish: () => void = () => undefined
+    let started: () => void = () => undefined
+    const hasStarted = new Promise<void>((resolve) => (started = resolve))
     const slow = store.run(
       't1',
       key,
       {},
-      () => new Promise<string>((resolve) => (finish = () => resolve('ok'))),
+      () =>
+        new Promise<string>((resolve) => {
+          finish = () => resolve('ok')
+          started()
+        }),
     )
-    await vi.waitFor(async () => {
-      expect(await errorCode(store.run('t1', key, {}, async () => 'x'))).toBe(
-        'CONFLICT',
-      )
-    })
+    // The first request holds the key only once its action runs.
+    await hasStarted
+    expect(await errorCode(store.run('t1', key, {}, async () => 'x'))).toBe(
+      'CONFLICT',
+    )
     finish()
     await expect(slow).resolves.toBe('ok')
   })

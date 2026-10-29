@@ -131,3 +131,15 @@ export async function signUpAndVerify(
     page.getByRole('heading', { name: `Welcome, ${options.name}` }),
   ).toBeVisible()
 }
+
+/** Creates a customer through the UI and ends on its details page. */
+export async function createCustomer(page: Page, name: string): Promise<void> {
+  await open(page, '/customers')
+  await page.getByRole('button', { name: 'Add customer' }).first().click()
+  const dialog = page.getByRole('dialog', { name: 'Add customer' })
+  await dialog.getByLabel('Name').fill(name)
+  await dialog.getByRole('button', { name: 'Add customer' }).click()
+  await expect(dialog).toBeHidden()
+  await page.getByRole('link', { name }).click()
+  await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
+}

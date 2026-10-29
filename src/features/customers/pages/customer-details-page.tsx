@@ -12,6 +12,7 @@ import { ErrorState } from '@/components/error-state'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { CustomerContacts } from '@/features/contacts'
 import { ArchiveCustomerDialog } from '@/features/customers/components/archive-customer-dialog'
 import { CustomerDetails } from '@/features/customers/components/customer-details'
 import { CustomerFormDialog } from '@/features/customers/components/customer-form-dialog'
@@ -114,7 +115,12 @@ export function CustomerDetailsPage() {
         }
       />
       <CustomerDetails customer={data} />
-      {/* Contacts and Deals sections join here with their features. */}
+      <CustomerContacts
+        customerId={data.id}
+        customerName={data.name}
+        isReadOnly={isArchived}
+      />
+      {/* The Deals section joins here with its feature. */}
       {!isArchived && (
         <CustomerFormDialog
           open={isEditing}

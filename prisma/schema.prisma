@@ -88,6 +88,7 @@ model Organization {
   members     Member[]
   invitations Invitation[]
   customers   Customer[]
+  contacts    Contact[]
 
   @@unique([slug])
   @@map("organization")
@@ -148,8 +149,28 @@ model Customer {
   status         CustomerStatus @default(active)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+  contacts       Contact[]
 
   @@unique([tenantId, nameNormalized])
   @@index([tenantId, status, nameNormalized])
   @@map("customers")
+}
+
+model Contact {
+  id         String       @id @default(uuid(7))
+  tenantId   String
+  tenant     Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  /// Set on create, never changed (docs/project.md). Customers are never deleted.
+  customerId String
+  customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  firstName  String
+  lastName   String
+  jobTitle   String?
+  email      String?
+  phone      String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([tenantId, customerId, lastName, firstName])
+  @@map("contacts")
 }

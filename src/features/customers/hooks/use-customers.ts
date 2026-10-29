@@ -5,7 +5,6 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { toast } from 'sonner'
 import {
@@ -19,6 +18,7 @@ import {
 import type { Customer } from '@/features/customers/types/customer'
 import type { CustomerFormValues } from '@/features/customers/types/customer-form-schema'
 import type { CustomerListParams } from '@/features/customers/types/customer-search'
+import { useWorkspaceId } from '@/hooks/use-workspace-id'
 import { isAppError } from '@/lib/app-error'
 
 /** Keys start with the workspace id (docs/data-and-api.md). */
@@ -49,27 +49,21 @@ export function customerQueryOptions(tenantId: string, customerId: string) {
   })
 }
 
-const authenticatedRoute = getRouteApi('/_authenticated')
-
-function useTenantId(): string {
-  return authenticatedRoute.useRouteContext().workspace.id
-}
-
 /** One page of the customer list; keeps the previous page while the next loads. */
 export function useCustomers(params: CustomerListParams) {
-  return useQuery(customersQueryOptions(useTenantId(), params))
+  return useQuery(customersQueryOptions(useWorkspaceId(), params))
 }
 
 export function useCustomer(customerId: string) {
   return useQuery({
-    ...customerQueryOptions(useTenantId(), customerId),
+    ...customerQueryOptions(useWorkspaceId(), customerId),
     retry: (failureCount, error) => !isCustomerGone(error) && failureCount < 2,
   })
 }
 
 function useInvalidateCustomers() {
   const queryClient = useQueryClient()
-  const tenantId = useTenantId()
+  const tenantId = useWorkspaceId()
   return () =>
     queryClient.invalidateQueries({ queryKey: customerKeys.all(tenantId) })
 }
