@@ -56,8 +56,13 @@ start of every task.
 | Deal            | `Deal`           | A potential sale to a customer that moves through stages. Belongs to exactly one customer.                                               |
 | Stage           | `DealStage`      | Where a deal is: Lead → Qualified → Proposal → Negotiation → Won / Lost (`lead`, `qualified`, `proposal`, `negotiation`, `won`, `lost`). |
 | Value           | `value`          | The deal's amount in its own currency (EUR, USD, or GBP). Amounts in different currencies are never converted or added together.         |
-| Activity        | `Activity`       | A call, meeting, email, or task logged against a customer, contact, or deal. <!-- TODO: confirm whether other activity types exist -->   |
-| Invoice         | `Invoice`        | A bill. <!-- TODO: issued to a customer, a won deal, or both? line items? statuses? -->                                                  |
+| Activity        | `Activity`       | A call, meeting, email, or task logged against a customer, optionally also against one of its contacts and one of its deals.             |
+| Activity type   | `ActivityType`   | `call`, `meeting`, `email`, `task`. Shown as "Call", "Meeting", "Email", "Task".                                                         |
+| Task            | (`type: 'task'`) | An activity to do by its date; it is open until marked done.                                                                             |
+| Invoice         | `Invoice`        | A bill to a customer, optionally for one of its Won deals, with line items.                                                              |
+| Invoice status  | `InvoiceStatus`  | `draft` → `sent` → `paid`, or `void`. Shown as "Draft", "Sent", "Paid", "Void".                                                          |
+| Line item       | `InvoiceLine`    | One row of an invoice: description, quantity, unit price.                                                                                |
+| Invoice number  | `number`         | `INV-0001`, sequential per workspace, given when the invoice is sent.                                                                    |
 
 ### App-specific wording
 
@@ -112,12 +117,40 @@ Every tenant-owned entity also has `tenantId`, `createdAt`, and `updatedAt`
 
 ### Activity
 
-<!-- TODO: fields (UI label, code name, type, rules) -->
+| Field (UI) | Code name    | Type                | Rules                                                                     |
+| ---------- | ------------ | ------------------- | ------------------------------------------------------------------------- |
+| —          | `id`         | string              | Assigned by the server                                                    |
+| Type       | `type`       | `ActivityType`      | Required, defaults to `call`                                              |
+| Subject    | `subject`    | string              | Required, at most 200 characters                                          |
+| Notes      | `notes`      | string              | Optional, free text, at most 5,000 characters                             |
+| Date       | `date`       | date (`YYYY-MM-DD`) | Required. When it happened; for a task, when it is due. Defaults to today |
+| Customer   | `customerId` | string              | Required, an active customer; fixed after create                          |
+| Contact    | `contactId`  | string \| null      | Optional, one of the customer's contacts; cleared when it is deleted      |
+| Deal       | `dealId`     | string \| null      | Optional, one of the customer's deals; cleared when it is deleted         |
+| Done       | `done`       | boolean             | Tasks only (always false for other types); defaults to false              |
 
 ### Invoice
 
-<!-- TODO: fields (UI label, code name, type, rules). Invoice PDFs are a
-likely use of R2. -->
+| Field (UI) | Code name    | Type                      | Rules                                                                                   |
+| ---------- | ------------ | ------------------------- | --------------------------------------------------------------------------------------- |
+| —          | `id`         | string                    | Assigned by the server                                                                  |
+| Number     | `number`     | string \| null            | Set by the server when sent: `INV-` + 4+ digits, sequential per workspace, never reused |
+| Customer   | `customerId` | string                    | Required, an active customer; fixed after create                                        |
+| Deal       | `dealId`     | string \| null            | Optional, a **Won** deal of the same customer                                           |
+| Currency   | `currency`   | `'EUR' \| 'USD' \| 'GBP'` | Required, defaults to the deal's currency or `EUR`                                      |
+| Tax rate   | `taxRate`    | decimal (%)               | Required, 0 to 100, at most 2 decimals, defaults to 0                                   |
+| Due date   | `dueDate`    | date (`YYYY-MM-DD`)       | Optional                                                                                |
+| Notes      | `notes`      | string                    | Optional, at most 2,000 characters                                                      |
+| Status     | `status`     | `InvoiceStatus`           | Set by the server: `draft` on create; changed only by Send / Mark as paid / Void        |
+| Issued on  | `issuedAt`   | date                      | Set by the server when sent                                                             |
+| Lines      | `lines`      | `InvoiceLine[]`           | At least one to send; at most 100                                                       |
+
+**Invoice line:** description (required, at most 500 characters), quantity
+(more than 0, at most 2 decimals), unit price (0 to 999,999,999.99, at most 2
+decimals). Totals are computed by the server and never stored by the client:
+line amount = quantity × unit price, rounded to cents; subtotal = sum of line
+amounts; tax = subtotal × tax rate / 100, rounded to cents; total = subtotal +
+tax. All amounts are `Decimal`, never floats.
 
 ## 5. Features
 
@@ -127,10 +160,10 @@ likely use of R2. -->
 | Auth       | `src/features/auth/`       | Done    | Sign up (creates a workspace), email verification, sign in, sign out, password reset, session restore                                                    |
 | Workspaces | `src/features/workspaces/` | Done    | Active workspace and switcher, create a workspace, members page, invite by email, accept an invitation                                                   |
 | Customers  | `src/features/customers/`  | Done    | Build order 1, **reference feature**. List (search by name, status filter, sort by name, paginate), details, create (idempotent), edit, archive, restore |
-| Contacts   | `src/features/contacts/`   | Planned | Build order 2. A Contacts section on the customer details page: list (search, sort), add, edit, delete                                                   |
+| Contacts   | `src/features/contacts/`   | Done    | Build order 2. A Contacts section on the customer details page: list (search, sort), add, edit, delete                                                   |
 | Deals      | `src/features/deals/`      | Planned | Build order 3. List, details with a stage control, create, edit, delete, Deals section on the customer page, pipeline board                              |
-| Activities | `src/features/activities/` | Planned | Build order 4                                                                                                                                            |
-| Invoices   | `src/features/invoices/`   | Planned | Build order 5                                                                                                                                            |
+| Activities | `src/features/activities/` | Planned | Build order 4. Activities section on the customer and deal pages, an Activities page with open tasks first, add, edit, mark done, delete                 |
+| Invoices   | `src/features/invoices/`   | Planned | Build order 5. Invoices list and details, create and edit drafts with line items, send, mark as paid, void, Invoices section on the customer page        |
 
 Update the status to `Done` when a feature meets the Definition of Done.
 
@@ -145,8 +178,9 @@ Do not invent rules that are not listed here; ask and add them.
 2. **All business data is scoped to one workspace.** A record from another
    workspace behaves as if it does not exist (`NOT_FOUND`, never `FORBIDDEN`,
    so ids from other workspaces leak nothing).
-3. **Delete or archive is decided per feature.** <!-- TODO: decide for
-   Activities and Invoices -->
+3. **Delete or archive is decided per feature:** customers are archived;
+   contacts, deals, and activities are deleted; invoices are voided, never
+   deleted (rules 4, 7, 11, 26, 30).
 4. **Customers are archived, never deleted.** Archiving asks for confirmation
    in a dialog that names the customer; restoring does not. The customer list
    shows active customers by default; a status filter shows archived ones or
@@ -169,7 +203,8 @@ Do not invent rules that are not listed here; ask and add them.
 13. **A deal's customer cannot change after it is created.** Its contact must
     be one of that customer's contacts (`VALIDATION_FAILED` otherwise);
     deleting the contact leaves the deal without one.
-14. <!-- TODO: uniqueness rules for Activities and Invoices -->
+14. **Nothing about activities is unique.** Invoice numbers are unique per
+    workspace (rule 29).
 
 ### Accounts and workspaces
 
@@ -200,19 +235,56 @@ Do not invent rules that are not listed here; ask and add them.
     minute and try again."). If the rate-limit store is unreachable, requests
     are allowed and the failure is logged.
 
+### Activities
+
+24. **An activity belongs to a customer**, and optionally to one of that
+    customer's contacts and one of its deals (`VALIDATION_FAILED`
+    otherwise). Its customer cannot change after it is created.
+25. **The activities of an archived customer are read-only** (`CUSTOMER_ARCHIVED`):
+    shown, but not added, edited, completed, or deleted until it is restored.
+26. **Deleting an activity is permanent**, after a confirmation dialog that
+    names it. Deleting a contact or deal leaves its activities without it.
+27. **Only tasks can be done.** Marking a task done (or not done) is a
+    separate action from editing. Open tasks are listed before everything
+    else, by date; then the rest, newest first.
+
+### Invoices
+
+28. **Only a draft can be edited** (`INVOICE_NOT_EDITABLE`). A draft needs at
+    least one line to be sent (`INVOICE_HAS_NO_LINES`).
+29. **Sending gives the number and the issue date.** Numbers are sequential
+    per workspace (INV-0001, INV-0002, …), never reused, even after a void.
+30. **Statuses move forward only:** Draft → Sent (Send), Sent → Paid (Mark as
+    paid), Draft or Sent → Void (Void, after a confirmation that names the
+    invoice). Anything else is `INVALID_STATUS_CHANGE`. Invoices are never
+    deleted; a voided draft has no number.
+31. **A deal on an invoice must be a Won deal of the same customer**
+    (`VALIDATION_FAILED`). If the deal is deleted, the invoice keeps its
+    lines and loses the link.
+32. **The invoices of an archived customer:** no new invoices, and its drafts
+    are read-only (`CUSTOMER_ARCHIVED`); sent invoices can still be marked as
+    paid or voided.
+33. **Amounts are never converted between currencies**; lists show each
+    invoice in its own currency (as for deal values).
+34. Invoice PDFs and emailing invoices come later (R2 and the outbox).
+    <!-- TODO -->
+
 ### Error codes
 
-| Code                  | When                                                                            |
-| --------------------- | ------------------------------------------------------------------------------- |
-| `UNAUTHENTICATED`     | No valid session.                                                               |
-| `NO_ACTIVE_WORKSPACE` | Signed in, but no active workspace is selected.                                 |
-| `NOT_FOUND`           | The record does not exist **in the active workspace**.                          |
-| `VALIDATION_FAILED`   | Input failed validation; `details` holds field errors.                          |
-| `NAME_TAKEN`          | Customer name already used in the workspace.                                    |
-| `CUSTOMER_ARCHIVED`   | Change attempted on an archived customer or its contacts/deals.                 |
-| `RATE_LIMITED`        | Too many requests (see `docs/resiliency.md`).                                   |
-| `CONFLICT`            | Same `Idempotency-Key` reused with a different request.                         |
-| `INTERNAL`            | An unexpected failure; the message is generic, details are only in server logs. |
+| Code                    | When                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| `UNAUTHENTICATED`       | No valid session.                                                               |
+| `NO_ACTIVE_WORKSPACE`   | Signed in, but no active workspace is selected.                                 |
+| `NOT_FOUND`             | The record does not exist **in the active workspace**.                          |
+| `VALIDATION_FAILED`     | Input failed validation; `details` holds field errors.                          |
+| `NAME_TAKEN`            | Customer name already used in the workspace.                                    |
+| `CUSTOMER_ARCHIVED`     | Change attempted on an archived customer or its contacts/deals.                 |
+| `RATE_LIMITED`          | Too many requests (see `docs/resiliency.md`).                                   |
+| `CONFLICT`              | Same `Idempotency-Key` reused with a different request.                         |
+| `INVOICE_NOT_EDITABLE`  | Change attempted on an invoice that is no longer a draft.                       |
+| `INVOICE_HAS_NO_LINES`  | Sending a draft without line items.                                             |
+| `INVALID_STATUS_CHANGE` | A status change rule 30 does not allow.                                         |
+| `INTERNAL`              | An unexpected failure; the message is generic, details are only in server logs. |
 
 ## 7. Critical User Flows (E2E)
 
@@ -228,4 +300,5 @@ Each flow has a Playwright test (see `docs/quality.md`).
    restore it.
 6. Add a contact to a customer.
 7. Create a deal and move it through its stages.
-8. Create an invoice. _(Planned with Invoices.)_
+8. Log an activity and complete a task.
+9. Create an invoice with line items, send it, and mark it as paid.
