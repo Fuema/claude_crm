@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./.dev.vars)",
+      "Read(./.dev.vars.*)",
+      "Edit(./.env*)",
+      "Edit(./.dev.vars*)",
+      "Bash(cat .env*)",
+      "Bash(cat .dev.vars*)",
+      "Bash(git push:*)",
+      "Bash(bunx wrangler deploy:*)",
+      "Bash(wrangler deploy:*)",
+      "Bash(bunx prisma migrate deploy:*)",
+      "Bash(bunx prisma migrate reset:*)",
+      "Bash(bun x prisma migrate reset:*)",
+      "Bash(bunx prisma db push:*)"
+    ],
+    "ask": [
+      "Bash(bun install:*)",
+      "Bash(bun add:*)",
+      "Bash(bun remove:*)",
+      "Bash(bun run db:migrate:*)",
+      "Bash(bunx wrangler secret:*)",
+      "Bash(docker compose down:*)",
+      "Bash(git commit:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint-changed-file.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

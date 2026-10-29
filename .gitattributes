@@ -1,0 +1,6 @@
+# Keep every text file on LF line endings, in the repository and in the
+# working copy, on every OS. Biome and the TanStack Router plugin write LF;
+# with Windows' `core.autocrlf=true`, files would otherwise be checked out
+# as CRLF and fail `bun run check`.
+# Binary files (images, the .xlsx tracker) are detected and left alone.
+* text=auto eol=lf
