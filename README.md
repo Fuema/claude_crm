@@ -10,9 +10,9 @@ with Neon PostgreSQL through Prisma and Better Auth.
 
 ## Status
 
-Sign-up with email verification, sign-in, password reset, workspaces, and
-invitations work end to end. The first business feature, Customers, comes
-next (step 4).
+Sign-up with email verification, sign-in, password reset, workspaces,
+invitations, and Customers (the reference feature) work end to end.
+Contacts, Deals, Activities, and Invoices come next (step 5).
 
 ## Build Plan
 
@@ -22,7 +22,7 @@ next (step 4).
 | 1    | Scaffold: TanStack Start, Biome, Vitest, Playwright, Prisma, Docker, Wrangler | Done    |
 | 2a   | Shared components copied from the frontend template (was step 3)              | Done    |
 | 2b   | App shell, Better Auth, workspaces, invitations, email, rate limits           | Done    |
-| 4    | Customers, the reference feature, end to end                                  | Planned |
+| 4    | Customers, the reference feature, end to end                                  | Done    |
 | 5    | Contacts, Deals, Activities, Invoices                                         | Planned |
 | 6    | CI/CD and first deployment                                                    | Planned |
 

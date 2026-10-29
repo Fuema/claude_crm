@@ -121,16 +121,16 @@ likely use of R2. -->
 
 ## 5. Features
 
-| Feature    | Folder                     | Status  | Notes                                                                                                                                       |
-| ---------- | -------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shell      | `src/features/shell/`      | Done    | App layout (header, sidebar, skip link, workspace switcher, user menu). Not a business feature. Dark mode deferred                          |
-| Auth       | `src/features/auth/`       | Done    | Sign up (creates a workspace), email verification, sign in, sign out, password reset, session restore                                       |
-| Workspaces | `src/features/workspaces/` | Done    | Active workspace and switcher, create a workspace, members page, invite by email, accept an invitation                                      |
-| Customers  | `src/features/customers/`  | Planned | Build order 1, **reference feature**. List (search by name, status filter, sort by name, paginate), details, create, edit, archive, restore |
-| Contacts   | `src/features/contacts/`   | Planned | Build order 2. A Contacts section on the customer details page: list (search, sort), add, edit, delete                                      |
-| Deals      | `src/features/deals/`      | Planned | Build order 3. List, details with a stage control, create, edit, delete, Deals section on the customer page, pipeline board                 |
-| Activities | `src/features/activities/` | Planned | Build order 4                                                                                                                               |
-| Invoices   | `src/features/invoices/`   | Planned | Build order 5                                                                                                                               |
+| Feature    | Folder                     | Status  | Notes                                                                                                                                                    |
+| ---------- | -------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shell      | `src/features/shell/`      | Done    | App layout (header, sidebar, skip link, workspace switcher, user menu). Not a business feature. Dark mode deferred                                       |
+| Auth       | `src/features/auth/`       | Done    | Sign up (creates a workspace), email verification, sign in, sign out, password reset, session restore                                                    |
+| Workspaces | `src/features/workspaces/` | Done    | Active workspace and switcher, create a workspace, members page, invite by email, accept an invitation                                                   |
+| Customers  | `src/features/customers/`  | Done    | Build order 1, **reference feature**. List (search by name, status filter, sort by name, paginate), details, create (idempotent), edit, archive, restore |
+| Contacts   | `src/features/contacts/`   | Planned | Build order 2. A Contacts section on the customer details page: list (search, sort), add, edit, delete                                                   |
+| Deals      | `src/features/deals/`      | Planned | Build order 3. List, details with a stage control, create, edit, delete, Deals section on the customer page, pipeline board                              |
+| Activities | `src/features/activities/` | Planned | Build order 4                                                                                                                                            |
+| Invoices   | `src/features/invoices/`   | Planned | Build order 5                                                                                                                                            |
 
 Update the status to `Done` when a feature meets the Definition of Done.
 

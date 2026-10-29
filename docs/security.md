@@ -22,7 +22,9 @@ anything that renders user-supplied content.
 - The auth tables (`user`, `session`, `account`, `verification`, `organization`,
   `member`, `invitation`) are part of `prisma/schema.prisma`, generated with
   the Better Auth CLI from `scripts/better-auth.config.ts` and migrated like
-  any other table. Regenerate them after changing Better Auth plugins.
+  any other table. Regenerate them after changing Better Auth plugins, **into a
+  temporary file**: the CLI overwrites the whole schema (CRM models included),
+  so merge its output by hand.
 - The browser uses Better Auth's client (`lib/auth-client.ts`) only for
   sign-in, sign-out, password reset, and resending the verification email.
   Sign-up (it also creates the workspace) and everything about workspaces go

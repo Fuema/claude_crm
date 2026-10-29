@@ -76,6 +76,9 @@ For significant UI changes:
 - Each critical flow in `docs/project.md` Section 7 has a Playwright test,
   with an axe scan on each page it visits.
 - Select elements by role or label, never by CSS class.
+- After a navigation, assert something on the new page (usually its heading)
+  before typing: pages load their code on demand, so the old page can still
+  be showing and would receive the input.
 - Tests are independent: each signs up or uses its own seeded workspace.
 - Import `test` and helpers from `src/tests/e2e/fixtures.ts`:
   - `test` gives every page its own client IP, so the per-IP auth rate

@@ -38,12 +38,16 @@ fail if the limiter silently allowed everything (which fail-open could hide).
 
 ## Idempotency
 
-**Status:** planned — first user: create customer.
+**Status:** active — create customer (`createCustomerFn`).
 
 - The client creates one key per user action (`crypto.randomUUID()` when the
-  form opens or the action starts) and sends it with the mutation. A retry of
-  the same action reuses the key; a new action gets a new key.
-- `idempotencyMiddleware` stores `idem:<tenantId>:<key>` in Redis:
+  form opens or the action starts) and sends it with the mutation as
+  `idempotencyKey` (part of the input schema, `z.uuid()`). A retry of the same
+  action reuses the key; after a success the form takes a new key.
+- The server function wraps the service call in
+  `getIdempotencyStore().run(tenantId, key, input, action)`
+  (`src/server/idempotency.ts`), which stores `idem:<tenantId>:<key>` in
+  Redis:
   1. Key missing → set it to `in-progress` with `SET NX` and a TTL, run the
      handler, store the result (24 h TTL).
   2. Key holds a result → return the stored result without running again.
@@ -51,7 +55,10 @@ fail if the limiter silently allowed everything (which fail-open could hide).
      processed.").
   4. Same key, different input (hash mismatch) → `CONFLICT`.
 - Only successful results are stored; a failed attempt deletes the key so the
-  user can retry.
+  user can retry. Results round-trip through JSON, so actions return plain
+  models.
+- If Redis is unreachable, the action runs without idempotency and the failure
+  is logged; database constraints still protect the data.
 - Inside one database transaction, prefer database constraints (unique
   indexes) over Redis: Redis protects against retries, constraints protect
   the data.

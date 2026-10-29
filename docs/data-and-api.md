@@ -47,10 +47,21 @@ Pick the first option that fits:
 
 ### Tenant scoping
 
-- Services receive a **tenant-scoped client** from `getTenantDb(tenantId)`
-  (`src/server/tenant-db.ts`). It is a Prisma client extension that adds
-  `tenantId` to the `where` of every read/update/delete and to the `data` of
-  every create on tenant-owned models.
+- Services receive a `TenantScope` (`{ db, tenantId }`) as their first
+  argument; `tenantMiddleware` puts it in the context as `context.tenant`.
+  `db` comes from `getTenantDb(tenantId)` (`src/server/tenant-db.ts`): a
+  Prisma client extension that adds `tenantId` to the `where` of every
+  read/update/delete and to the `data` of every create on the models listed in
+  `TENANT_MODELS`. **Add every new tenant-owned model to that list.**
+- Prisma's types still require `tenantId` on create: pass `scope.tenantId`
+  (the extension would overwrite a wrong value anyway).
+- Not covered by the extension: nested writes into a tenant model through a
+  relation. Create tenant rows with their own top-level call.
+- Prefer `updateMany`/`deleteMany` with the id in `where` for changes: a row of
+  another workspace then simply matches nothing (`count` 0 → `NOT_FOUND`).
+  Conditions in the same `where` (e.g. `status: 'active'`) make checks atomic.
+- Integration tests create a workspace with `createTestWorkspace(db)`
+  (`src/tests/factories/workspace.ts`).
 - Never call `getDb()` from a feature service. The unscoped client is for
   Better Auth, the outbox relay, migrations, and seeds only.
 - A record from another workspace is `NOT_FOUND`.

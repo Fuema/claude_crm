@@ -55,7 +55,8 @@ claude_crm/
 ```
 server/
 ├── db.ts              Prisma client factory (Neon adapter), `getDb()`
-├── tenant-db.ts       `getTenantDb(tenantId)`: Prisma client scoped to one workspace (with Customers)
+├── tenant-db.ts       `getTenantDb`, `getTenantScope`: Prisma client scoped to one workspace
+├── idempotency.ts     `getIdempotencyStore().run(...)` for changes that must not run twice
 ├── auth.ts            Better Auth config (`createAuth`, `getAuth(db)`): email/password, organization plugin
 ├── auth-roles.ts      Workspace roles (owner, admin, member who may invite)
 ├── better-auth-errors.ts  `betterAuthErrorCode(error)`
@@ -79,13 +80,17 @@ Every feature follows the reference feature named in `docs/project.md`
 ```
 features/customers/
 ├── server/            SERVER ONLY
-│   ├── customer-functions.ts   createServerFn definitions (the feature's "API")
-│   ├── customer-service.ts     Business logic + Prisma queries; takes (db, input)
+│   ├── customer-functions.ts    createServerFn definitions (the feature's "API")
+│   ├── customer-service.ts      Business logic + Prisma queries; takes (scope, input)
 │   └── customer-service.test.ts Integration tests against the test database
 ├── types/             Models and Zod schemas shared by server and client
-│   ├── customer.ts             Model type returned to the client
-│   └── customer-schemas.ts     Input schemas (create, update, list search)
-├── hooks/             Query key factory, TanStack Query hooks calling the server functions
+│   ├── customer.ts              Model type returned to the client, status labels
+│   ├── customer-form-schema.ts  Form schema (also validates create/update on the server)
+│   ├── customer-search.ts       URL search schema → list params
+│   └── customer-inputs.ts       Server-function input schemas built from the above
+├── hooks/
+│   ├── use-customers.ts         Query key factory, queryOptions, queries, mutations
+│   └── use-customer-list-search.ts  List state in the URL
 ├── components/        UI used only by this feature
 ├── pages/             Page components rendered by route files
 ├── store.ts           Optional TanStack Store for feature-only UI state
@@ -96,7 +101,7 @@ features/customers/
   validate input with the Zod schema from `types/`, call the service, return
   a model. No queries here.
 - **`*-service.ts`** holds the rules (`CUSTOMER_ARCHIVED`, `NAME_TAKEN`, …) and
-  the queries. It receives a tenant-scoped db, so it is easy to test without
+  the queries. It receives a `TenantScope` (`context.tenant`), so it is easy to test without
   HTTP.
 - **`types/`** must not import from `server/`, Prisma, or anything
   server-only: the client imports it.

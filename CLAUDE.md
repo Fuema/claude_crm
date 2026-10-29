@@ -54,21 +54,21 @@ test runner, or CSS approach) without asking.
 
 Run from the repository root. Use these exact commands; do not invent others.
 
-| Purpose                | Command               |
-| ---------------------- | --------------------- |
-| Install                | `bun install`         |
-| Start local services   | `bun run db:up`       |
-| Stop local services    | `bun run db:down`     |
-| Dev server             | `bun run dev`         |
-| Type check             | `bun run typecheck`   |
-| Lint + format check    | `bun run check`       |
-| Lint + format fix      | `bun run check:fix`   |
-| Unit/integration tests | `bun run test`        |
-| E2E tests              | `bun run test:e2e`    |
-| Build                  | `bun run build`       |
-| New migration          | `bun run db:migrate`  |
-| Generate Prisma client | `bun run db:generate` |
-| Database browser       | `bun run db:studio`   |
+| Purpose                | Command                               |
+| ---------------------- | ------------------------------------- |
+| Install                | `bun install`                         |
+| Start local services   | `bun run db:up`                       |
+| Stop local services    | `bun run db:down`                     |
+| Dev server             | `bun run dev`                         |
+| Type check             | `bun run typecheck`                   |
+| Lint + format check    | `bun run check`                       |
+| Lint + format fix      | `bun run check:fix`                   |
+| Unit/integration tests | `bun run test`                        |
+| E2E tests              | `bun run test:e2e`                    |
+| Build                  | `bun run build`                       |
+| New migration          | `bun run db:migrate -- --name <name>` |
+| Generate Prisma client | `bun run db:generate`                 |
+| Database browser       | `bun run db:studio`                   |
 
 - **`bun run test`, never `bun test`.** `bun test` starts Bun's own test runner,
   not Vitest.
