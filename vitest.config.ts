@@ -34,6 +34,7 @@ export default defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [wasmModuleImports(), viteReact()],
   test: {
+    globals: true,
     env: { TEST_DATABASE_URL: env.TEST_DATABASE_URL ?? '' },
     projects: [
       {

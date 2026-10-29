@@ -1,6 +1,10 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
   "files": {
     "includes": [
       "**",
@@ -12,23 +16,42 @@
       "!bun.lock"
     ]
   },
-  "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 },
-  "javascript": {
-    "formatter": { "quoteStyle": "single", "semicolons": "asNeeded" }
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
   },
-  "tailwind": { "stylesheet": "./src/styles.css" },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded"
+    }
+  },
+  "tailwind": {
+    "stylesheet": "./src/styles.css"
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
       "preset": "recommended",
-      "suspicious": { "noConsole": "error", "noExplicitAny": "error" },
+      "suspicious": {
+        "noConsole": "error",
+        "noExplicitAny": "error"
+      },
       "nursery": {
         "useTailwindSortedClasses": {
           "level": "error",
           "fix": "safe",
           "options": {}
-        }
+        },
+        "noTailwindRawColors": "error"
       }
     }
   },
@@ -77,6 +100,12 @@
             }
           }
         }
+      }
+    },
+    {
+      "includes": ["src/components/ui/**"],
+      "linter": {
+        "enabled": false
       }
     }
   ]
