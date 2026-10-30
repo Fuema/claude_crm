@@ -12,6 +12,7 @@ import { ErrorState } from '@/components/error-state'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ActivitiesSection } from '@/features/activities'
 import { CustomerContacts } from '@/features/contacts'
 import { ArchiveCustomerDialog } from '@/features/customers/components/archive-customer-dialog'
 import { CustomerDetails } from '@/features/customers/components/customer-details'
@@ -124,6 +125,11 @@ export function CustomerDetailsPage() {
       <CustomerDeals
         customerId={data.id}
         customerName={data.name}
+        isReadOnly={isArchived}
+      />
+      <ActivitiesSection
+        scope={{ customerId: data.id }}
+        customer={{ id: data.id, name: data.name }}
         isReadOnly={isArchived}
       />
       {!isArchived && (

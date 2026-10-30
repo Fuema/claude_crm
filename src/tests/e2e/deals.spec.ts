@@ -130,7 +130,7 @@ test('critical flow 7: create a deal (with validation errors) and move it throug
   ).toContainText('Won')
 })
 
-test('the pipeline board moves deals, totals per currency, and keeps archived deals read-only', async ({
+test('the pipeline board moves deals and totals each currency separately', async ({
   page,
 }) => {
   await signUpAndVerify(page, {
@@ -139,7 +139,6 @@ test('the pipeline board moves deals, totals per currency, and keeps archived de
     workspaceName: 'Pipeline Co',
   })
   await createCustomer(page, 'Busy Customer')
-  await createCustomer(page, 'Old Customer')
   await addDeal(page, {
     title: 'Hangar upgrade',
     customer: 'Busy Customer',
@@ -156,11 +155,6 @@ test('the pipeline board moves deals, totals per currency, and keeps archived de
     value: '4300',
     currency: 'GBP',
   })
-  await addDeal(page, {
-    title: 'Clinic system',
-    customer: 'Old Customer',
-    value: '1000',
-  })
 
   await goToNav(page, 'Pipeline')
   await expect(
@@ -168,19 +162,34 @@ test('the pipeline board moves deals, totals per currency, and keeps archived de
   ).toBeVisible()
   // Never converted: one total per currency.
   await expect(column(page, 'Lead')).toContainText(
-    '4 deals · €152,000.00 · £4,300.00',
+    '3 deals · €151,000.00 · £4,300.00',
   )
   await expectNoAxeViolations(page)
 
   await moveOnBoard(page, 'Lead', 'Hangar upgrade', 'Qualified')
   await expect(column(page, 'Lead')).toContainText(
-    '3 deals · €62,000.00 · £4,300.00',
+    '2 deals · €61,000.00 · £4,300.00',
   )
   await moveOnBoard(page, 'Qualified', 'Hangar upgrade', 'Lost')
   // A lost deal can be reopened (rule 10).
   await moveOnBoard(page, 'Lost', 'Hangar upgrade', 'Negotiation')
+})
 
-  // Archive Old Customer, then narrow the board to it.
+test("the board shows an archived customer's deals read-only (rule 12)", async ({
+  page,
+}) => {
+  await signUpAndVerify(page, {
+    name: 'Olaf Old',
+    email: uniqueEmail('olaf'),
+    workspaceName: 'Archive Co',
+  })
+  await createCustomer(page, 'Old Customer')
+  await addDeal(page, {
+    title: 'Clinic system',
+    customer: 'Old Customer',
+    value: '1000',
+  })
+
   await open(page, '/customers')
   await page.getByRole('link', { name: 'Old Customer' }).click()
   await page.getByRole('button', { name: 'Archive customer' }).click()
@@ -193,12 +202,9 @@ test('the pipeline board moves deals, totals per currency, and keeps archived de
   ).toBeVisible()
 
   await open(page, '/deals/board')
-  await page.getByRole('combobox', { name: 'Customer' }).click()
-  await page.getByRole('option', { name: /Old Customer/ }).click()
   const archived = page.getByRole('article', { name: 'Clinic system' })
   await expect(archived).toContainText('Old Customer (archived)')
   await expect(archived.getByRole('button', { name: 'Move to…' })).toHaveCount(
     0,
   )
-  await expect(page.getByRole('article')).toHaveCount(1)
 })

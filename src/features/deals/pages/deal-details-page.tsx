@@ -11,6 +11,7 @@ import { ErrorState } from '@/components/error-state'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ActivitiesSection } from '@/features/activities'
 import { DealDetails } from '@/features/deals/components/deal-details'
 import { DealFormDialog } from '@/features/deals/components/deal-form-dialog'
 import { DealStageControl } from '@/features/deals/components/deal-stage-control'
@@ -107,6 +108,11 @@ export function DealDetailsPage() {
         </div>
       )}
       <DealDetails deal={data} showStage={isReadOnly} />
+      <ActivitiesSection
+        scope={{ customerId: data.customer.id, dealId: data.id }}
+        customer={{ id: data.customer.id, name: data.customer.name }}
+        isReadOnly={isReadOnly}
+      />
       {!isReadOnly && (
         <>
           <DealFormDialog

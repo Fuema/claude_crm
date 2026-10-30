@@ -90,6 +90,7 @@ model Organization {
   customers   Customer[]
   contacts    Contact[]
   deals       Deal[]
+  activities  Activity[]
 
   @@unique([slug])
   @@map("organization")
@@ -152,6 +153,7 @@ model Customer {
   updatedAt      DateTime       @updatedAt
   contacts       Contact[]
   deals          Deal[]
+  activities     Activity[]
 
   @@unique([tenantId, nameNormalized])
   @@index([tenantId, status, nameNormalized])
@@ -173,6 +175,7 @@ model Contact {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   deals      Deal[]
+  activities Activity[]
 
   @@index([tenantId, customerId, lastName, firstName])
   @@map("contacts")
@@ -212,9 +215,47 @@ model Deal {
   expectedCloseDate DateTime?    @db.Date
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
+  activities        Activity[]
 
   @@index([tenantId, titleNormalized])
   @@index([tenantId, customerId, titleNormalized])
   @@index([tenantId, stage])
   @@map("deals")
+}
+
+enum ActivityType {
+  call
+  meeting
+  email
+  task
+}
+
+model Activity {
+  id         String       @id @default(uuid(7))
+  tenantId   String
+  tenant     Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type       ActivityType @default(call)
+  subject    String
+  notes      String?
+  /// When it happened; for a task, when it is due (rule 27).
+  date       DateTime     @db.Date
+  /// Fixed after create (rule 24). Customers are never deleted.
+  customerId String
+  customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  /// Cleared when the contact is deleted (rule 26).
+  contactId  String?
+  contact    Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  /// Cleared when the deal is deleted (rule 26).
+  dealId     String?
+  deal       Deal?        @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  /// Tasks only; always false for other types (rule 27).
+  done       Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([tenantId, type, done, date])
+  @@index([tenantId, date])
+  @@index([tenantId, customerId, date])
+  @@index([tenantId, dealId])
+  @@map("activities")
 }

@@ -3,6 +3,7 @@ import {
   BuildingIcon,
   HandshakeIcon,
   HomeIcon,
+  ListChecksIcon,
   type LucideIcon,
   UsersIcon,
 } from 'lucide-react'
@@ -45,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
       { to: '/deals/board', label: 'Pipeline' },
     ],
   },
+  { to: '/activities', label: 'Activities', icon: ListChecksIcon },
   { to: '/members', label: 'Members', icon: UsersIcon },
 ]
 

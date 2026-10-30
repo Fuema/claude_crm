@@ -27,6 +27,7 @@ import type { DealListParams } from '@/features/deals/types/deal-search'
 import { useWorkspaceId } from '@/hooks/use-workspace-id'
 import { isAppError } from '@/lib/app-error'
 import { workspaceKey } from '@/lib/query-keys'
+import type { LookupOption } from '@/types/lookup-option'
 
 /** Keys start with the workspace id (docs/data-and-api.md). */
 export const dealKeys = {
@@ -86,6 +87,22 @@ export function useCustomerDeals(customerId: string) {
   })
 }
 
+/**
+ * The deals of one customer for a picker (e.g. an activity's deal); shares
+ * the cache of the customer's Deals section. Idle without a customer.
+ */
+export function useDealOptions(customerId: string | undefined) {
+  const tenantId = useWorkspaceId()
+  return useQuery({
+    queryKey: dealKeys.byCustomer(tenantId, customerId ?? ''),
+    queryFn: () =>
+      fetchCustomerDeals({ data: { customerId: customerId ?? '' } }),
+    enabled: Boolean(customerId),
+    select: (deals): LookupOption[] =>
+      deals.map((deal) => ({ id: deal.id, name: deal.title })),
+  })
+}
+
 export function useBoardDeals(customerId: string | undefined) {
   return useQuery(boardDealsQueryOptions(useWorkspaceId(), customerId))
 }
@@ -100,8 +117,10 @@ export function useDeal(dealId: string) {
 function useInvalidateDeals() {
   const queryClient = useQueryClient()
   const tenantId = useWorkspaceId()
+  // Other features show deals (an activity's deal), so refresh everything
+  // of the workspace.
   return () =>
-    queryClient.invalidateQueries({ queryKey: dealKeys.all(tenantId) })
+    queryClient.invalidateQueries({ queryKey: workspaceKey(tenantId) })
 }
 
 // Create and update toast on success only. Their failures are shown inside
@@ -175,7 +194,8 @@ function useForgetDeal() {
         queryKey: dealKeys.detail(tenantId, deal.id),
         refetchType: 'none',
       }),
-      queryClient.invalidateQueries({ queryKey: dealKeys.lists(tenantId) }),
+      // Lists, and other features showing the deal (activities).
+      queryClient.invalidateQueries({ queryKey: workspaceKey(tenantId) }),
     ])
   }
 }

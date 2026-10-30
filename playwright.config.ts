@@ -8,6 +8,9 @@ export default defineConfig({
   // Flows sign up a user and build their data first; the dev server compiles
   // pages on first use.
   timeout: 60_000,
+  // The dev server compiles a server function on its first call after a
+  // change, which can take several seconds.
+  expect: { timeout: 10_000 },
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: 'list',

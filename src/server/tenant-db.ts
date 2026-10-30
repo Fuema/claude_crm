@@ -9,6 +9,7 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'Customer',
   'Contact',
   'Deal',
+  'Activity',
 ])
 
 const WHERE_OPERATIONS = new Set([

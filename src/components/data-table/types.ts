@@ -18,6 +18,8 @@ declare module '@tanstack/table-core' {
     onArchiveRow?: (row: TData) => void
     /** Restores an archived row, e.g. from a row actions menu. */
     onRestoreRow?: (row: TData) => void
+    /** Marks a row done or not done, e.g. a task. */
+    onSetDoneRow?: (row: TData, done: boolean) => void
   }
 }
 
