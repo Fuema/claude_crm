@@ -38,12 +38,12 @@ export function createAuthRateLimiter(
       const windowKey = `rl:auth:${key}:${Math.floor(now() / WINDOW_MS)}`
       let count: number
       try {
-        const [incremented] = await redis
-          .multi()
-          .incr(windowKey)
-          .expire(windowKey, (2 * WINDOW_MS) / 1000)
-          .exec<[number, number]>()
-        count = incremented
+        // Two plain commands, no MULTI: the local REST emulator shares one
+        // Redis connection, so concurrent transactions would collide. NX sets
+        // the lifetime only once, and a later request sets it if this one
+        // stopped in between.
+        count = await redis.incr(windowKey)
+        await redis.expire(windowKey, (2 * WINDOW_MS) / 1000, 'NX')
       } catch (error) {
         // Fail open: an unreachable store must not lock everyone out.
         logger.error('Rate limit store unreachable; request allowed', {

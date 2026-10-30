@@ -155,6 +155,10 @@ describe('invitations', () => {
     expect(
       await errorCode(acceptInvitation(kit.auth, invitee.headers, id)),
     ).toBe('NOT_FOUND')
+    // Better Auth answers this one without an error code.
+    expect(await errorCode(getInvitation(kit.auth, invitee.headers, id))).toBe(
+      'NOT_FOUND',
+    )
   })
 })
 

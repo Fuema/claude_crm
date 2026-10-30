@@ -8,7 +8,10 @@ import type {
 } from '@/features/workspaces/types/workspace'
 import { AppError } from '@/lib/app-error'
 import type { Auth } from '@/server/auth'
-import { betterAuthErrorCode } from '@/server/better-auth-errors'
+import {
+  betterAuthErrorCode,
+  isBetterAuthApiError,
+} from '@/server/better-auth-errors'
 import type { Db } from '@/server/db'
 import { workspaceSlug } from '@/server/workspaces'
 
@@ -110,7 +113,7 @@ export async function setActiveWorkspace(
       headers,
     })
   } catch (error) {
-    if (betterAuthErrorCode(error)) {
+    if (isBetterAuthApiError(error)) {
       throw notFound('This workspace does not exist.', error)
     }
     throw error
@@ -169,7 +172,7 @@ export async function getInvitation(
       email: invitation.email,
     }
   } catch (error) {
-    if (betterAuthErrorCode(error)) {
+    if (isBetterAuthApiError(error)) {
       throw notFound(INVITATION_UNAVAILABLE, error)
     }
     throw error
@@ -193,7 +196,7 @@ export async function acceptInvitation(
     }
     workspaceId = result.invitation.organizationId
   } catch (error) {
-    if (betterAuthErrorCode(error)) {
+    if (isBetterAuthApiError(error)) {
       throw notFound(INVITATION_UNAVAILABLE, error)
     }
     throw error

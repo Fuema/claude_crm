@@ -18,6 +18,21 @@ describe('createAuthRateLimiter', () => {
     expect(isAppError(third) && third.code).toBe('RATE_LIMITED')
   })
 
+  it('counts concurrent requests exactly, without store errors', async () => {
+    const errors = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined)
+    const limiter = createAuthRateLimiter(REDIS, 10)
+    const key = `test:${crypto.randomUUID()}`
+
+    const results = await Promise.allSettled(
+      Array.from({ length: 15 }, () => limiter.check(key)),
+    )
+
+    expect(results.filter((r) => r.status === 'rejected')).toHaveLength(5)
+    expect(errors).not.toHaveBeenCalled()
+  })
+
   it('counts each key separately', async () => {
     const limiter = createAuthRateLimiter(REDIS, 1)
     await limiter.check(`test:${crypto.randomUUID()}`)

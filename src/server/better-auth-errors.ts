@@ -11,3 +11,11 @@ export function betterAuthErrorCode(error: unknown): string | undefined {
   }
   return undefined
 }
+
+/**
+ * Any error Better Auth's API throws on purpose (not found, not allowed, …),
+ * with or without a code: some of its errors carry only a message.
+ */
+export function isBetterAuthApiError(error: unknown): boolean {
+  return isAPIError(error)
+}
