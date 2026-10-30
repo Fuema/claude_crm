@@ -1,6 +1,7 @@
 import { Link, type LinkProps, useMatchRoute } from '@tanstack/react-router'
 import {
   BuildingIcon,
+  HandshakeIcon,
   HomeIcon,
   type LucideIcon,
   UsersIcon,
@@ -13,26 +14,50 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar'
 
-interface NavItem {
+interface NavLink {
   to: LinkProps['to']
   label: string
+}
+
+interface NavItem extends NavLink {
   icon: LucideIcon
+  /** Sub-pages, shown under the item (hidden while the sidebar is collapsed). */
+  items?: NavLink[]
 }
 
 // Each feature adds its entry here when it is built.
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Home', icon: HomeIcon },
   { to: '/customers', label: 'Customers', icon: BuildingIcon },
+  {
+    to: '/deals',
+    label: 'Deals',
+    icon: HandshakeIcon,
+    items: [
+      { to: '/deals', label: 'All deals' },
+      { to: '/deals/board', label: 'Pipeline' },
+    ],
+  },
   { to: '/members', label: 'Members', icon: UsersIcon },
 ]
 
 export function AppSidebar() {
   const matchRoute = useMatchRoute()
   const { isMobile, setOpenMobile } = useSidebar()
+
+  // On phones the sidebar covers the page; close it once a page is chosen.
+  function handleNavigate() {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -51,20 +76,27 @@ export function AppSidebar() {
                       )}
                       tooltip={item.label}
                     >
-                      <Link
-                        to={item.to}
-                        // On phones the sidebar covers the page; close it
-                        // once a page is chosen.
-                        onClick={() => {
-                          if (isMobile) {
-                            setOpenMobile(false)
-                          }
-                        }}
-                      >
+                      <Link to={item.to} onClick={handleNavigate}>
                         <item.icon aria-hidden="true" />
                         <span>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
+                    {item.items && (
+                      <SidebarMenuSub>
+                        {item.items.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.label}>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={Boolean(matchRoute({ to: subItem.to }))}
+                            >
+                              <Link to={subItem.to} onClick={handleNavigate}>
+                                <span>{subItem.label}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    )}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>

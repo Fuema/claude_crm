@@ -1,5 +1,7 @@
 import type {
   Customer,
+  CustomerOption,
+  CustomerOptionStatus,
   CustomerPage,
 } from '@/features/customers/types/customer'
 import type { CustomerFormValues } from '@/features/customers/types/customer-form-schema'
@@ -81,6 +83,23 @@ export async function listCustomers(
     page: params.page,
     pageSize: params.pageSize,
   }
+}
+
+/** Every customer (or every active one) by name, for pickers. */
+export async function listCustomerOptions(
+  { db }: TenantScope,
+  status: CustomerOptionStatus,
+): Promise<CustomerOption[]> {
+  const rows = await db.customer.findMany({
+    where: status === 'active' ? { status: 'active' } : {},
+    orderBy: [{ nameNormalized: 'asc' }, { id: 'asc' }],
+    select: { id: true, name: true, status: true },
+  })
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    isArchived: row.status === 'archived',
+  }))
 }
 
 export async function getCustomer(

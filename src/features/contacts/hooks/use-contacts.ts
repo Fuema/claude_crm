@@ -11,10 +11,11 @@ import type { Contact } from '@/features/contacts/types/contact'
 import type { ContactFormValues } from '@/features/contacts/types/contact-form-schema'
 import { useWorkspaceId } from '@/hooks/use-workspace-id'
 import { isAppError } from '@/lib/app-error'
+import { workspaceKey } from '@/lib/query-keys'
 
 /** Keys start with the workspace id (docs/data-and-api.md). */
 export const contactKeys = {
-  all: (tenantId: string) => ['tenant', tenantId, 'contacts'] as const,
+  all: (tenantId: string) => [...workspaceKey(tenantId), 'contacts'] as const,
   /** Every contact of one customer. */
   byCustomer: (tenantId: string, customerId: string) =>
     [...contactKeys.all(tenantId), 'customer', customerId] as const,
@@ -32,8 +33,32 @@ export function useCustomerContacts(customerId: string) {
 function useInvalidateContacts() {
   const queryClient = useQueryClient()
   const tenantId = useWorkspaceId()
+  // Other features show contacts (a deal's contact), so refresh everything
+  // of the workspace.
   return () =>
-    queryClient.invalidateQueries({ queryKey: contactKeys.all(tenantId) })
+    queryClient.invalidateQueries({ queryKey: workspaceKey(tenantId) })
+}
+
+/** One entry of a contact picker, e.g. a deal's contact. */
+export interface ContactOption {
+  id: string
+  name: string
+}
+
+/**
+ * The contacts of one customer for a picker; shares the cache of the
+ * customer's Contacts section. Idle without a customer.
+ */
+export function useContactOptions(customerId: string | undefined) {
+  const tenantId = useWorkspaceId()
+  return useQuery({
+    queryKey: contactKeys.byCustomer(tenantId, customerId ?? ''),
+    queryFn: () =>
+      fetchCustomerContacts({ data: { customerId: customerId ?? '' } }),
+    enabled: Boolean(customerId),
+    select: (contacts): ContactOption[] =>
+      contacts.map((contact) => ({ id: contact.id, name: contact.fullName })),
+  })
 }
 
 // Create and update toast on success only. Their failures are shown inside

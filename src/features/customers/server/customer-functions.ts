@@ -3,6 +3,7 @@ import {
   archiveCustomer,
   createCustomer,
   getCustomer,
+  listCustomerOptions,
   listCustomers,
   restoreCustomer,
   updateCustomer,
@@ -10,6 +11,7 @@ import {
 import {
   createCustomerSchema,
   customerIdSchema,
+  customerOptionsSchema,
   listCustomersSchema,
   updateCustomerSchema,
 } from '@/features/customers/types/customer-inputs'
@@ -21,6 +23,13 @@ export const fetchCustomers = createServerFn({ method: 'GET' })
   .middleware([tenantMiddleware])
   .validator(validateInput(listCustomersSchema))
   .handler(({ data, context }) => listCustomers(context.tenant, data))
+
+export const fetchCustomerOptions = createServerFn({ method: 'GET' })
+  .middleware([tenantMiddleware])
+  .validator(validateInput(customerOptionsSchema))
+  .handler(({ data, context }) =>
+    listCustomerOptions(context.tenant, data.status),
+  )
 
 export const fetchCustomer = createServerFn({ method: 'GET' })
   .middleware([tenantMiddleware])

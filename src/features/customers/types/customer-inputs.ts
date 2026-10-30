@@ -16,6 +16,10 @@ export const listCustomersSchema = z.object({
   order: z.enum(['asc', 'desc']).optional(),
 })
 
+export const customerOptionsSchema = z.object({
+  status: z.enum(['active', 'all']),
+})
+
 export const customerIdSchema = z.object({ customerId: z.string().min(1) })
 
 /** `idempotencyKey`: one per opened form, reused if the submit is retried. */

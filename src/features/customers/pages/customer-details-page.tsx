@@ -21,6 +21,7 @@ import {
   useCustomer,
   useRestoreCustomer,
 } from '@/features/customers/hooks/use-customers'
+import { CustomerDeals } from '@/features/deals'
 import { isAppError } from '@/lib/app-error'
 
 const routeApi = getRouteApi('/_authenticated/customers/$customerId')
@@ -120,7 +121,11 @@ export function CustomerDetailsPage() {
         customerName={data.name}
         isReadOnly={isArchived}
       />
-      {/* The Deals section joins here with its feature. */}
+      <CustomerDeals
+        customerId={data.id}
+        customerName={data.name}
+        isReadOnly={isArchived}
+      />
       {!isArchived && (
         <CustomerFormDialog
           open={isEditing}

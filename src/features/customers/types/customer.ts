@@ -21,6 +21,16 @@ export interface Customer {
   status: CustomerStatus
 }
 
+/** A customer in a picker (e.g. a deal's customer). */
+export interface CustomerOption {
+  id: string
+  name: string
+  /** Archived customers appear only in `'all'` lists, e.g. filters. */
+  isArchived: boolean
+}
+
+export type CustomerOptionStatus = 'active' | 'all'
+
 export interface CustomerPage {
   items: Customer[]
   total: number

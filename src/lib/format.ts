@@ -1,6 +1,14 @@
+/**
+ * One fixed locale for all formatting. Pages render on the server first; with
+ * the runtime's default locale, a browser set to another language would
+ * format differently and React would report a hydration mismatch. The UI is
+ * in English, so numbers and dates follow it.
+ */
+export const DISPLAY_LOCALE = 'en-US'
+
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
+const dateFormatter = new Intl.DateTimeFormat(DISPLAY_LOCALE, {
   dateStyle: 'medium',
 })
 
@@ -29,4 +37,22 @@ export function todayIsoDate(now: Date = new Date()): string {
   const month = String(now.getMonth() + 1).padStart(2, '0')
   const day = String(now.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+const moneyFormatters = new Map<string, Intl.NumberFormat>()
+
+/**
+ * Formats an amount in its own currency (an ISO 4217 code such as "EUR"),
+ * e.g. "€12,500.00". Amounts are never converted between currencies.
+ */
+export function formatMoney(value: number, currency: string): string {
+  let formatter = moneyFormatters.get(currency)
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(DISPLAY_LOCALE, {
+      style: 'currency',
+      currency,
+    })
+    moneyFormatters.set(currency, formatter)
+  }
+  return formatter.format(value)
 }

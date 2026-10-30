@@ -44,13 +44,19 @@ export async function open(page: Page, url: string): Promise<void> {
  * slide-out panel, so it is opened first.
  */
 export async function goToNav(page: Page, name: string): Promise<void> {
-  const link = page
-    .getByRole('navigation', { name: 'Main' })
-    .getByRole('link', { name })
-  if (!(await link.isVisible())) {
-    await page.getByRole('button', { name: 'Toggle Sidebar' }).click()
+  // Below the md breakpoint (768 px, see use-mobile.ts) the sidebar is a
+  // slide-out panel opened from the header.
+  const isPhone = (page.viewportSize()?.width ?? 1280) < 768
+  if (isPhone) {
+    await page
+      .getByRole('banner')
+      .getByRole('button', { name: 'Toggle Sidebar' })
+      .click()
   }
-  await link.click()
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('link', { name, exact: true })
+    .click()
 }
 
 export function uniqueEmail(label: string): string {

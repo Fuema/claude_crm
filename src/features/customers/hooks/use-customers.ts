@@ -11,19 +11,24 @@ import {
   archiveCustomerFn,
   createCustomerFn,
   fetchCustomer,
+  fetchCustomerOptions,
   fetchCustomers,
   restoreCustomerFn,
   updateCustomerFn,
 } from '@/features/customers/server/customer-functions'
-import type { Customer } from '@/features/customers/types/customer'
+import type {
+  Customer,
+  CustomerOptionStatus,
+} from '@/features/customers/types/customer'
 import type { CustomerFormValues } from '@/features/customers/types/customer-form-schema'
 import type { CustomerListParams } from '@/features/customers/types/customer-search'
 import { useWorkspaceId } from '@/hooks/use-workspace-id'
 import { isAppError } from '@/lib/app-error'
+import { workspaceKey } from '@/lib/query-keys'
 
 /** Keys start with the workspace id (docs/data-and-api.md). */
 export const customerKeys = {
-  all: (tenantId: string) => ['tenant', tenantId, 'customers'] as const,
+  all: (tenantId: string) => [...workspaceKey(tenantId), 'customers'] as const,
   lists: (tenantId: string) => [...customerKeys.all(tenantId), 'list'] as const,
   list: (tenantId: string, params: CustomerListParams) =>
     [...customerKeys.lists(tenantId), params] as const,
@@ -64,8 +69,26 @@ export function useCustomer(customerId: string) {
 function useInvalidateCustomers() {
   const queryClient = useQueryClient()
   const tenantId = useWorkspaceId()
+  // Other features show customers (a deal's customer and its archive
+  // state), so refresh everything of the workspace.
   return () =>
-    queryClient.invalidateQueries({ queryKey: customerKeys.all(tenantId) })
+    queryClient.invalidateQueries({ queryKey: workspaceKey(tenantId) })
+}
+
+/**
+ * Customers for a picker: only active ones (e.g. a new deal's customer) or
+ * all (e.g. a list filter). Pass `enabled: false` when no picker is shown.
+ */
+export function useCustomerOptions(
+  status: CustomerOptionStatus = 'active',
+  { enabled = true }: { enabled?: boolean } = {},
+) {
+  const tenantId = useWorkspaceId()
+  return useQuery({
+    queryKey: [...customerKeys.all(tenantId), 'options', status],
+    queryFn: () => fetchCustomerOptions({ data: { status } }),
+    enabled,
+  })
 }
 
 // Create and update toast on success only. Their failures are shown inside

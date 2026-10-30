@@ -89,6 +89,7 @@ model Organization {
   invitations Invitation[]
   customers   Customer[]
   contacts    Contact[]
+  deals       Deal[]
 
   @@unique([slug])
   @@map("organization")
@@ -150,6 +151,7 @@ model Customer {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   contacts       Contact[]
+  deals          Deal[]
 
   @@unique([tenantId, nameNormalized])
   @@index([tenantId, status, nameNormalized])
@@ -170,7 +172,49 @@ model Contact {
   phone      String?
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
+  deals      Deal[]
 
   @@index([tenantId, customerId, lastName, firstName])
   @@map("contacts")
+}
+
+enum DealStage {
+  lead
+  qualified
+  proposal
+  negotiation
+  won
+  lost
+}
+
+enum Currency {
+  EUR
+  USD
+  GBP
+}
+
+model Deal {
+  id                String       @id @default(uuid(7))
+  tenantId          String
+  tenant            Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title             String
+  /// lower(trim(title)): case-insensitive search and sort
+  titleNormalized   String
+  /// Fixed after create (rule 13). Customers are never deleted.
+  customerId        String
+  customer          Customer     @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  /// Cleared when the contact is deleted (rule 13).
+  contactId         String?
+  contact           Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  value             Decimal      @db.Decimal(12, 2)
+  currency          Currency     @default(EUR)
+  stage             DealStage    @default(lead)
+  expectedCloseDate DateTime?    @db.Date
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([tenantId, titleNormalized])
+  @@index([tenantId, customerId, titleNormalized])
+  @@index([tenantId, stage])
+  @@map("deals")
 }

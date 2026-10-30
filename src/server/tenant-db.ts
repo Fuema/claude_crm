@@ -8,6 +8,7 @@ import { type Db, getDb } from '@/server/db'
 export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'Customer',
   'Contact',
+  'Deal',
 ])
 
 const WHERE_OPERATIONS = new Set([
