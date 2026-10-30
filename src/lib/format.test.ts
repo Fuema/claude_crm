@@ -22,4 +22,13 @@ describe('formatMoney', () => {
     expect(formatMoney(0, 'GBP')).toBe('£0.00')
     expect(formatMoney(1, 'USD')).toBe('$1.00')
   })
+
+  it('formats a decimal string exactly, even beyond float precision', () => {
+    expect(formatMoney('99999999998000000000.05', 'EUR')).toBe(
+      '€99,999,999,998,000,000,000.05',
+    )
+    expect(formatMoney('0.5', 'GBP')).toBe('£0.50')
+    expect(formatMoney('1234', 'USD')).toBe('$1,234.00')
+    expect(() => formatMoney('1.234', 'EUR')).toThrow('Not an amount')
+  })
 })

@@ -23,6 +23,7 @@ import {
   useRestoreCustomer,
 } from '@/features/customers/hooks/use-customers'
 import { CustomerDeals } from '@/features/deals'
+import { CustomerInvoices } from '@/features/invoices'
 import { isAppError } from '@/lib/app-error'
 
 const routeApi = getRouteApi('/_authenticated/customers/$customerId')
@@ -123,6 +124,11 @@ export function CustomerDetailsPage() {
         isReadOnly={isArchived}
       />
       <CustomerDeals
+        customerId={data.id}
+        customerName={data.name}
+        isReadOnly={isArchived}
+      />
+      <CustomerInvoices
         customerId={data.id}
         customerName={data.name}
         isReadOnly={isArchived}

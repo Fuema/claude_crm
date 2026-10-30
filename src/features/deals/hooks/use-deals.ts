@@ -103,6 +103,30 @@ export function useDealOptions(customerId: string | undefined) {
   })
 }
 
+/** A Won deal in a picker, with its currency (e.g. an invoice's deal). */
+export interface WonDealOption extends LookupOption {
+  currency: Deal['currency']
+}
+
+/** The Won deals of one customer, for an invoice (rule 31). */
+export function useWonDealOptions(customerId: string | undefined) {
+  const tenantId = useWorkspaceId()
+  return useQuery({
+    queryKey: dealKeys.byCustomer(tenantId, customerId ?? ''),
+    queryFn: () =>
+      fetchCustomerDeals({ data: { customerId: customerId ?? '' } }),
+    enabled: Boolean(customerId),
+    select: (deals): WonDealOption[] =>
+      deals
+        .filter((deal) => deal.stage === 'won')
+        .map((deal) => ({
+          id: deal.id,
+          name: deal.title,
+          currency: deal.currency,
+        })),
+  })
+}
+
 export function useBoardDeals(customerId: string | undefined) {
   return useQuery(boardDealsQueryOptions(useWorkspaceId(), customerId))
 }

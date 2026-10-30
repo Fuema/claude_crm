@@ -10,6 +10,9 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'Contact',
   'Deal',
   'Activity',
+  'Invoice',
+  'InvoiceLine',
+  'InvoiceCounter',
 ])
 
 const WHERE_OPERATIONS = new Set([

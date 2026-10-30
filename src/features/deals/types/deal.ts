@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { Currency } from '@/lib/currency'
 
 export const dealStageSchema = z.enum([
   'lead',
@@ -23,11 +24,11 @@ export const DEAL_STAGE_LABELS: Record<DealStage, string> = {
   lost: 'Lost',
 }
 
-export const currencySchema = z.enum(['EUR', 'USD', 'GBP'])
-
-export type Currency = z.infer<typeof currencySchema>
-
-export const DEFAULT_CURRENCY: Currency = 'EUR'
+export {
+  type Currency,
+  currencySchema,
+  DEFAULT_CURRENCY,
+} from '@/lib/currency'
 
 export interface DealCustomer {
   id: string

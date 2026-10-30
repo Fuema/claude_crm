@@ -1,6 +1,7 @@
 import { Link, type LinkProps, useMatchRoute } from '@tanstack/react-router'
 import {
   BuildingIcon,
+  FileTextIcon,
   HandshakeIcon,
   HomeIcon,
   ListChecksIcon,
@@ -47,6 +48,7 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   { to: '/activities', label: 'Activities', icon: ListChecksIcon },
+  { to: '/invoices', label: 'Invoices', icon: FileTextIcon },
   { to: '/members', label: 'Members', icon: UsersIcon },
 ]
 

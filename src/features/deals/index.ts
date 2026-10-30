@@ -4,6 +4,8 @@ export {
   dealQueryOptions,
   dealsQueryOptions,
   useDealOptions,
+  useWonDealOptions,
+  type WonDealOption,
 } from '@/features/deals/hooks/use-deals'
 export { DealBoardPage } from '@/features/deals/pages/deal-board-page'
 export { DealDetailsPage } from '@/features/deals/pages/deal-details-page'

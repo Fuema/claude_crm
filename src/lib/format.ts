@@ -41,11 +41,15 @@ export function todayIsoDate(now: Date = new Date()): string {
 
 const moneyFormatters = new Map<string, Intl.NumberFormat>()
 
+const DECIMAL_STRING = /^(\d+)(?:\.(\d{1,2}))?$/
+
 /**
  * Formats an amount in its own currency (an ISO 4217 code such as "EUR"),
- * e.g. "€12,500.00". Amounts are never converted between currencies.
+ * e.g. "€12,500.00". Amounts are never converted between currencies. A
+ * non-negative decimal string with at most 2 decimals ("1234.50", as invoices
+ * use) is formatted exactly, without passing through a float.
  */
-export function formatMoney(value: number, currency: string): string {
+export function formatMoney(value: number | string, currency: string): string {
   let formatter = moneyFormatters.get(currency)
   if (!formatter) {
     formatter = new Intl.NumberFormat(DISPLAY_LOCALE, {
@@ -54,5 +58,20 @@ export function formatMoney(value: number, currency: string): string {
     })
     moneyFormatters.set(currency, formatter)
   }
-  return formatter.format(value)
+  if (typeof value === 'number') {
+    return formatter.format(value)
+  }
+  const match = DECIMAL_STRING.exec(value)
+  if (!match) {
+    throw new Error(`Not an amount: ${value}`)
+  }
+  // The whole part as a bigint is exact at any size; the cents replace the
+  // formatted fraction (all supported currencies have 2 decimals).
+  const [, whole = '0', cents = ''] = match
+  return formatter
+    .formatToParts(BigInt(whole))
+    .map((part) =>
+      part.type === 'fraction' ? cents.padEnd(2, '0') : part.value,
+    )
+    .join('')
 }
