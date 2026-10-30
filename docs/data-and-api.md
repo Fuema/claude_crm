@@ -45,6 +45,8 @@ Pick the first option that fits:
   Uniqueness rules are per workspace: `@@unique([tenantId, …])`.
 - Money: `Decimal @db.Decimal(12, 2)` + a `currency` field. Never `Float`.
   Convert to a string (or a number of minor units) when sending to the client.
+  Arithmetic on the client (e.g. a live total) uses `bigint` cents, never
+  `number` (ADR 0006); `formatMoney` accepts the decimal string as is.
 - Dates without a time (`expectedCloseDate`): `DateTime @db.Date`, sent to the
   client as `'YYYY-MM-DD'`.
 - Case-insensitive uniqueness (customer name): store a normalized column

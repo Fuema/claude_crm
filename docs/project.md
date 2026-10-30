@@ -150,20 +150,21 @@ Every tenant-owned entity also has `tenantId`, `createdAt`, and `updatedAt`
 decimals). Totals are computed by the server and never stored by the client:
 line amount = quantity × unit price, rounded to cents; subtotal = sum of line
 amounts; tax = subtotal × tax rate / 100, rounded to cents; total = subtotal +
-tax. All amounts are `Decimal`, never floats.
+tax. All amounts are `Decimal`, never floats (see
+`docs/decisions/0006-invoice-money-and-numbering.md`).
 
 ## 5. Features
 
-| Feature    | Folder                     | Status  | Notes                                                                                                                                                    |
-| ---------- | -------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shell      | `src/features/shell/`      | Done    | App layout (header, sidebar, skip link, workspace switcher, user menu). Not a business feature. Dark mode deferred                                       |
-| Auth       | `src/features/auth/`       | Done    | Sign up (creates a workspace), email verification, sign in, sign out, password reset, session restore                                                    |
-| Workspaces | `src/features/workspaces/` | Done    | Active workspace and switcher, create a workspace, members page, invite by email, accept an invitation                                                   |
-| Customers  | `src/features/customers/`  | Done    | Build order 1, **reference feature**. List (search by name, status filter, sort by name, paginate), details, create (idempotent), edit, archive, restore |
-| Contacts   | `src/features/contacts/`   | Done    | Build order 2. A Contacts section on the customer details page: list (search, sort), add, edit, delete                                                   |
-| Deals      | `src/features/deals/`      | Done    | Build order 3. List, details with a stage control, create, edit, delete, Deals section on the customer page, pipeline board                              |
-| Activities | `src/features/activities/` | Done    | Build order 4. Activities section on the customer and deal pages, an Activities page with open tasks first, add, edit, mark done, delete                 |
-| Invoices   | `src/features/invoices/`   | Planned | Build order 5. Invoices list and details, create and edit drafts with line items, send, mark as paid, void, Invoices section on the customer page        |
+| Feature    | Folder                     | Status | Notes                                                                                                                                                    |
+| ---------- | -------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shell      | `src/features/shell/`      | Done   | App layout (header, sidebar, skip link, workspace switcher, user menu). Not a business feature. Dark mode deferred                                       |
+| Auth       | `src/features/auth/`       | Done   | Sign up (creates a workspace), email verification, sign in, sign out, password reset, session restore                                                    |
+| Workspaces | `src/features/workspaces/` | Done   | Active workspace and switcher, create a workspace, members page, invite by email, accept an invitation                                                   |
+| Customers  | `src/features/customers/`  | Done   | Build order 1, **reference feature**. List (search by name, status filter, sort by name, paginate), details, create (idempotent), edit, archive, restore |
+| Contacts   | `src/features/contacts/`   | Done   | Build order 2. A Contacts section on the customer details page: list (search, sort), add, edit, delete                                                   |
+| Deals      | `src/features/deals/`      | Done   | Build order 3. List, details with a stage control, create, edit, delete, Deals section on the customer page, pipeline board                              |
+| Activities | `src/features/activities/` | Done   | Build order 4. Activities section on the customer and deal pages, an Activities page with open tasks first, add, edit, mark done, delete                 |
+| Invoices   | `src/features/invoices/`   | Done   | Build order 5. Invoices list and details, create and edit drafts with line items, send, mark as paid, void, Invoices section on the customer page        |
 
 Update the status to `Done` when a feature meets the Definition of Done.
 
