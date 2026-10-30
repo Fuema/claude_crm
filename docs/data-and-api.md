@@ -29,8 +29,14 @@ Pick the first option that fits:
   module. Vitest (Node) loads that import through a small plugin in
   `vitest.config.ts`; keep both when upgrading Prisma.
 - Import the client from `@/generated/prisma/client`.
-- **Create the client per request** with `getDb()` (`src/server/db.ts`): a
-  Worker must not reuse a database connection across requests.
+- **Create the client per request, and close it**: a Worker must not reuse a
+  database connection across requests, and every client opens its own
+  connection pool. Use `withDb(async (db) => …)` (`src/server/db.ts`), which
+  closes the client in a `finally`. `authMiddleware` already wraps every
+  protected server function this way (`context.db`); only code outside it
+  (the session check, sign-up, the Better Auth route, health) calls `withDb`
+  itself. A client that is never closed leaks connections until Postgres
+  refuses new ones (ADR 0005); `src/server/db.test.ts` guards this.
 - Models: PascalCase singular (`Customer`); fields camelCase; tables mapped to
   snake_case plural with `@@map("customers")`.
 - IDs: `String @id @default(uuid(7))`.
@@ -169,6 +175,13 @@ export const customerKeys = {
 ```
 
 - Switching workspace clears the query cache (`queryClient.clear()`).
+- Build keys on `workspaceKey(tenantId)` (`lib/query-keys.ts`). A feature
+  whose data other features show (a customer's name on its deals, a contact
+  on a deal) invalidates the whole `workspaceKey` after a change, instead of
+  importing the other features' keys. Only queries on screen refetch.
+- Pickers come from the owning feature's `index.ts` (`useCustomerOptions`
+  from Customers, `useContactOptions` from Contacts), typed as
+  `LookupOption` (`src/types/lookup-option.ts`).
 - After a mutation, invalidate the affected keys. Optimistic updates only when
   asked (the pipeline board is a likely candidate).
 - Mutation feedback (from the earlier CRM, unchanged):

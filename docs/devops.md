@@ -46,6 +46,10 @@ deployment process.
 
 ## Troubleshooting
 
+- **"Too many database connections opened"**: something creates a Prisma
+  client without closing it. Use `withDb` (see `docs/data-and-api.md`).
+  Check with `SELECT count(*) FROM pg_stat_activity WHERE datname = 'crm'`:
+  it should not grow while you click around.
 - **"The file does not exist … in the optimize deps directory"** after adding
   a dependency: Vite's pre-bundle cache is stale. Stop the dev server and start
   it once with `bun run dev -- --force`.

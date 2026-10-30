@@ -70,6 +70,11 @@ in sync with `docs/project.md` (Section 1).
 - No inline `style={{…}}`, except for values computed at runtime (e.g. a
   progress width).
 - Build mobile-first; add `sm:`, `md:`, `lg:` on top.
+- Format dates and money only with `formatDate` and `formatMoney`
+  (`lib/format.ts`). They use one fixed locale (`en-US`): the server renders
+  first, and a browser's own locale would format differently and break
+  hydration. Never call `toLocaleString()` or `Intl.*` with the default
+  locale in components.
 - Light and dark themes come from the CSS variables. Never use `dark:`
   overrides with hardcoded colors.
 - Keep class lists readable; if a pattern repeats, extract a component

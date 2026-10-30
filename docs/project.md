@@ -161,7 +161,7 @@ tax. All amounts are `Decimal`, never floats.
 | Workspaces | `src/features/workspaces/` | Done    | Active workspace and switcher, create a workspace, members page, invite by email, accept an invitation                                                   |
 | Customers  | `src/features/customers/`  | Done    | Build order 1, **reference feature**. List (search by name, status filter, sort by name, paginate), details, create (idempotent), edit, archive, restore |
 | Contacts   | `src/features/contacts/`   | Done    | Build order 2. A Contacts section on the customer details page: list (search, sort), add, edit, delete                                                   |
-| Deals      | `src/features/deals/`      | Planned | Build order 3. List, details with a stage control, create, edit, delete, Deals section on the customer page, pipeline board                              |
+| Deals      | `src/features/deals/`      | Done    | Build order 3. List, details with a stage control, create, edit, delete, Deals section on the customer page, pipeline board                              |
 | Activities | `src/features/activities/` | Planned | Build order 4. Activities section on the customer and deal pages, an Activities page with open tasks first, add, edit, mark done, delete                 |
 | Invoices   | `src/features/invoices/`   | Planned | Build order 5. Invoices list and details, create and edit drafts with line items, send, mark as paid, void, Invoices section on the customer page        |
 

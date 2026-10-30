@@ -88,7 +88,12 @@ For significant UI changes:
   - `goToNav(page, name)` opens the mobile sidebar when needed.
   - `linkFromEmail(request, to, subject)` reads the link from Mailpit.
   - `signUpAndVerify(page, …)` ends signed in on the home page.
-- Both projects run: `desktop` (Chrome) and `mobile` (Pixel 7).
+- Both projects run: `desktop` (Chrome) and `mobile` (Pixel 7), with
+  reduced motion (no animations, so accessibility scans never see an element
+  mid-fade) and a 60-second limit per test.
+- Before E2E after a schema change, restart the dev server with
+  `bun run dev -- --force`: the regenerated Prisma client leaves Vite's
+  pre-bundle cache stale, and server functions fail until it is rebuilt.
 
 ## Accessibility Baseline
 
