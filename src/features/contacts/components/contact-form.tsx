@@ -54,6 +54,7 @@ export function ContactForm({ id, defaultValues, onSubmit }: ContactFormProps) {
   return (
     <form
       id={id}
+      method="post"
       noValidate
       onSubmit={(event) => void form.handleSubmit(handleValidSubmit)(event)}
     >

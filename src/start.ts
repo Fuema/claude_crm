@@ -1,5 +1,5 @@
 import { createSerializationAdapter } from '@tanstack/react-router'
-import { createStart } from '@tanstack/react-start'
+import { createCsrfMiddleware, createStart } from '@tanstack/react-start'
 import { AppError, type AppErrorInit, isAppError } from '@/lib/app-error'
 import { errorMiddleware } from '@/server/middleware/error'
 
@@ -11,7 +11,17 @@ const appErrorAdapter = createSerializationAdapter({
   fromSerializable: (init: AppErrorInit) => new AppError(init),
 })
 
+/**
+ * Server functions run with the session cookie, so a request from another
+ * site must not reach them (docs/security.md). Better Auth's own routes check
+ * the origin themselves.
+ */
+const csrfMiddleware = createCsrfMiddleware({
+  filter: (ctx) => ctx.handlerType === 'serverFn',
+})
+
 export const startInstance = createStart(() => ({
   serializationAdapters: [appErrorAdapter],
+  requestMiddleware: [csrfMiddleware],
   functionMiddleware: [errorMiddleware],
 }))

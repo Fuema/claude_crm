@@ -58,6 +58,7 @@ export function CustomerForm({
   return (
     <form
       id={id}
+      method="post"
       noValidate
       onSubmit={(event) => void form.handleSubmit(handleValidSubmit)(event)}
     >
