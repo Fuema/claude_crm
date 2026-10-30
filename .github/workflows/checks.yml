@@ -1,0 +1,74 @@
+# The checks every change must pass (docs/devops.md, "CI"). Called by ci.yml
+# on pull requests and by deploy.yml before deploying.
+name: Checks
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Biome
+        run: bun run check
+
+      - name: Type check
+        run: bun run typecheck
+
+      # Local values only (docker-compose.yml): the same file a developer has.
+      # The auth secret is generated per run and never leaves the runner.
+      - name: Write .env for the local services
+        run: |
+          cat > .env <<ENV
+          DATABASE_URL=postgresql://postgres:postgres@localhost:55432/crm
+          TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:55432/crm_test
+          BETTER_AUTH_SECRET=$(openssl rand -hex 32)
+          BETTER_AUTH_URL=http://localhost:3000
+          UPSTASH_REDIS_REST_URL=http://localhost:8079
+          UPSTASH_REDIS_REST_TOKEN=local-dev-token
+          EMAIL_TRANSPORT=mailpit
+          MAILPIT_URL=http://localhost:8025
+          EMAIL_FROM="CRM <crm@example.test>"
+          ENV
+
+      - name: Start Postgres, Redis, and Mailpit
+        run: docker compose up -d --wait
+
+      - name: Migrate the app database
+        run: bunx prisma migrate deploy
+
+      - name: Unit and integration tests
+        run: bun run test
+
+      - name: Build
+        run: bun run build
+
+      - name: Install Playwright's Chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: bun run test:e2e
+
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
