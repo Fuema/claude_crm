@@ -78,27 +78,86 @@ deployment process.
 
 ## CI (GitHub Actions)
 
-On every pull request:
+`.github/workflows/`:
 
-1. `bun install --frozen-lockfile`
+| Workflow     | Runs on                 | Does                                                             |
+| ------------ | ----------------------- | ---------------------------------------------------------------- |
+| `checks.yml` | called by the two below | Every check a change must pass (list below)                      |
+| `ci.yml`     | every pull request      | `checks.yml`; a new push cancels the run in progress             |
+| `deploy.yml` | push to `master`        | `checks.yml`, then migrate and deploy production (one at a time) |
+
+The checks, in order:
+
+1. `bun install --frozen-lockfile` (Bun pinned to the version used locally)
 2. `bun run check` (Biome) and `bun run typecheck`
-3. `bun run test` against a Postgres service container
-4. `bun run build`
-5. `bun run test:e2e`
-6. Deploy a preview Worker with a Neon branch.
+3. Write a `.env` with the local Docker values and a freshly generated
+   `BETTER_AUTH_SECRET`, then `docker compose up -d --wait`: the same
+   services a developer runs, so tests behave as locally.
+4. `prisma migrate deploy` on the app database (Vitest migrates `crm_test`
+   itself).
+5. `bun run test`, `bun run build`
+6. `bun run test:e2e` on Chromium (desktop and mobile projects; 2 retries in
+   CI). Traces of failed tests are uploaded as an artifact for 7 days.
 
-On merge to `master`:
+The deploy job, after the checks:
 
-1. Same checks.
-2. `prisma migrate deploy` against production.
-3. `wrangler deploy`.
+1. `prisma migrate deploy` against production (`DATABASE_MIGRATION_URL`).
+2. `bun run build`, then `wrangler deploy` (it reads the Worker config the
+   build writes).
+
+Preview deployments (a Neon branch and a preview Worker per pull request)
+come later, once production runs.
 
 Rules:
 
 - Migrations run **before** the new code is deployed, so migrations must be
   backwards compatible with the code still running (see "Migrations" in
   `docs/data-and-api.md`).
-- Secrets come from GitHub repository secrets and `wrangler secret`, never
-  from files in the repository.
-- Branch protection on `master`: pull request required, checks must pass.
-  <!-- TODO: set up when the GitHub repository is created. -->
+- Secrets come from GitHub secrets and `wrangler secret`, never from files in
+  the repository. The workflows never print them.
+- Branch protection on `master`: pull request required, the `checks` job must
+  pass (set up in the repository settings; see below).
+
+## Production Configuration
+
+| Where                                   | Name                       | Value                                                                |
+| --------------------------------------- | -------------------------- | -------------------------------------------------------------------- |
+| Worker secret (`wrangler secret put`)   | `DATABASE_URL`             | Neon **pooled** connection string                                    |
+|                                         | `BETTER_AUTH_SECRET`       | `openssl rand -hex 32`                                               |
+|                                         | `BETTER_AUTH_URL`          | The Worker's URL, e.g. `https://claude-crm.<subdomain>.workers.dev`  |
+|                                         | `UPSTASH_REDIS_REST_URL`   | Upstash database, REST API section                                   |
+|                                         | `UPSTASH_REDIS_REST_TOKEN` | Upstash database, REST API section                                   |
+|                                         | `EMAIL_TRANSPORT`          | `resend`                                                             |
+|                                         | `EMAIL_FROM`               | `CRM <onboarding@resend.dev>` until a domain is verified (see below) |
+|                                         | `RESEND_API_KEY`           | Resend API key (sending access)                                      |
+| GitHub secret, environment `production` | `DATABASE_MIGRATION_URL`   | Neon **direct** (non-pooled) connection string, used by migrations   |
+|                                         | `CLOUDFLARE_API_TOKEN`     | Cloudflare token from the "Edit Cloudflare Workers" template         |
+|                                         | `CLOUDFLARE_ACCOUNT_ID`    | Cloudflare account ID                                                |
+
+- Worker secrets survive deployments; set them once, and again only to
+  change them.
+- **Email for now:** Resend's test sender `onboarding@resend.dev` delivers
+  only to the address of the Resend account itself, so only that person can
+  sign up. Verify a domain in Resend and change `EMAIL_FROM` before inviting
+  anyone.
+
+## First Deployment (runbook)
+
+Done once, by a person (Claude never sees the values):
+
+1. **Neon:** create a project. Copy the pooled and the direct connection
+   strings.
+2. **Upstash:** create a Redis database. Copy the REST URL and token.
+3. **Resend:** create an API key with sending access.
+4. **Cloudflare:** note the account ID and the `workers.dev` subdomain;
+   create an API token from the "Edit Cloudflare Workers" template.
+5. **Worker secrets:** in the project folder, for each Worker secret above
+   run `bunx wrangler secret put <NAME>` and paste the value. If Wrangler
+   asks whether to create the `claude-crm` Worker, answer yes.
+6. **GitHub:** create the environment `production` and add its three
+   secrets. Protect `master`: require a pull request and the `checks` status
+   check.
+7. Push `master`, open the pull request, and merge it once CI passes. The
+   Deploy workflow migrates Neon and deploys the Worker.
+8. **Smoke test:** open the Worker's URL, sign up with the Resend account's
+   address, verify, and create a customer.

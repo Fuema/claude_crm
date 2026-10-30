@@ -35,8 +35,9 @@ start of every task.
 - **Workspaces:** Better Auth organization plugin. Created at sign-up; others
   join by invitation (rules 18–22).
 - **Email:** Resend's REST API in production; Mailpit locally
-  (`http://localhost:8025`). Needs a sending domain verified in Resend before
-  the first deployment. <!-- TODO: sending domain and from address -->
+  (`http://localhost:8025`). The first deployment uses Resend's test sender
+  (only the Resend account's own address receives mail; see
+  `docs/devops.md`). <!-- TODO: sending domain and from address -->
 - **Rate limits:** sign-up, sign-in, and password reset requests (rule 23).
 - **Error format:** Server functions throw `AppError` with a code from
   Section 6's codes (see `docs/data-and-api.md`).

@@ -11,20 +11,21 @@ with Neon PostgreSQL through Prisma and Better Auth.
 ## Status
 
 Sign-up with email verification, sign-in, password reset, workspaces,
-invitations, and Customers (the reference feature) work end to end.
-Contacts, Deals, Activities, and Invoices come next (step 5).
+invitations, Customers, Contacts, Deals (with a pipeline board), Activities,
+and Invoices work end to end. Next: CI and the first deployment (step 6;
+see "First Deployment" in `docs/devops.md`).
 
 ## Build Plan
 
-| Step | What                                                                          | Status  |
-| ---- | ----------------------------------------------------------------------------- | ------- |
-| 0    | Rules: `CLAUDE.md`, `docs/`, `.claude/`                                       | Done    |
-| 1    | Scaffold: TanStack Start, Biome, Vitest, Playwright, Prisma, Docker, Wrangler | Done    |
-| 2a   | Shared components copied from the frontend template (was step 3)              | Done    |
-| 2b   | App shell, Better Auth, workspaces, invitations, email, rate limits           | Done    |
-| 4    | Customers, the reference feature, end to end                                  | Done    |
-| 5    | Contacts, Deals, Activities, Invoices                                         | Planned |
-| 6    | CI/CD and first deployment                                                    | Planned |
+| Step | What                                                                          | Status |
+| ---- | ----------------------------------------------------------------------------- | ------ |
+| 0    | Rules: `CLAUDE.md`, `docs/`, `.claude/`                                       | Done   |
+| 1    | Scaffold: TanStack Start, Biome, Vitest, Playwright, Prisma, Docker, Wrangler | Done   |
+| 2a   | Shared components copied from the frontend template (was step 3)              | Done   |
+| 2b   | App shell, Better Auth, workspaces, invitations, email, rate limits           | Done   |
+| 4    | Customers, the reference feature, end to end                                  | Done   |
+| 5    | Contacts, Deals, Activities, Invoices                                         | Done   |
+| 6    | CI/CD and first deployment                                                    | Doing  |
 
 ## Requirements
 
