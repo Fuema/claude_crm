@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { isAppError } from '@/lib/app-error'
 import { getAuth } from '@/server/auth'
+import { withDb } from '@/server/db'
 import { clientIp, getAuthRateLimiter } from '@/server/rate-limit'
 
 /** Better Auth endpoints that are rate-limited per IP (rule 23). */
@@ -23,13 +24,18 @@ async function handlePost(request: Request): Promise<Response> {
       throw error
     }
   }
-  return getAuth().handler(request)
+  return handle(request)
+}
+
+/** Better Auth with a client that is closed once the response is ready. */
+function handle(request: Request): Promise<Response> {
+  return withDb((db) => getAuth(db).handler(request))
 }
 
 export const Route = createFileRoute('/api/auth/$')({
   server: {
     handlers: {
-      GET: ({ request }) => getAuth().handler(request),
+      GET: ({ request }) => handle(request),
       POST: ({ request }) => handlePost(request),
     },
   },

@@ -10,7 +10,5 @@ export async function checkDatabase(db: Db): Promise<DatabaseStatus> {
   } catch (error) {
     logger.error('Health check: database query failed', { error })
     return 'unavailable'
-  } finally {
-    await db.$disconnect()
   }
 }

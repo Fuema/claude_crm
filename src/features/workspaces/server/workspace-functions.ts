@@ -17,7 +17,7 @@ import {
   workspaceIdSchema,
 } from '@/features/workspaces/types/workspace'
 import { getAuth } from '@/server/auth'
-import { getDb } from '@/server/db'
+import { withDb } from '@/server/db'
 import { authMiddleware, tenantMiddleware } from '@/server/middleware/auth'
 import { validateInput } from '@/server/validate'
 
@@ -26,21 +26,21 @@ import { validateInput } from '@/server/validate'
  * one server function without auth middleware (docs/security.md).
  */
 export const fetchShell = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<Shell | null> => {
-    const db = getDb()
-    const session = await getAuth(db).api.getSession({
-      headers: new Headers(getRequestHeaders()),
-    })
-    if (!session) {
-      return null
-    }
-    const { id, name, email } = session.user
-    return getShell(
-      db,
-      { id, name, email },
-      session.session.activeOrganizationId ?? null,
-    )
-  },
+  (): Promise<Shell | null> =>
+    withDb(async (db) => {
+      const session = await getAuth(db).api.getSession({
+        headers: new Headers(getRequestHeaders()),
+      })
+      if (!session) {
+        return null
+      }
+      const { id, name, email } = session.user
+      return getShell(
+        db,
+        { id, name, email },
+        session.session.activeOrganizationId ?? null,
+      )
+    }),
 )
 
 export const switchWorkspace = createServerFn({ method: 'POST' })

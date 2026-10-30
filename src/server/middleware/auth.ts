@@ -2,7 +2,7 @@ import { createMiddleware } from '@tanstack/react-start'
 import { getRequestHeaders } from '@tanstack/react-start/server'
 import { AppError } from '@/lib/app-error'
 import { getAuth } from '@/server/auth'
-import { type Db, getDb } from '@/server/db'
+import { type Db, withDb } from '@/server/db'
 import { getTenantScope } from '@/server/tenant-db'
 
 export interface SessionUser {
@@ -13,31 +13,33 @@ export interface SessionUser {
 
 /**
  * Requires a signed-in user. Puts the request's Better Auth instance, the db,
- * the user, and the active workspace id (possibly null) in the context.
+ * the user, and the active workspace id (possibly null) in the context. The
+ * db lives for this server function call: it is closed once the handler has
+ * finished.
  */
 export const authMiddleware = createMiddleware({ type: 'function' }).server(
-  async ({ next }) => {
-    const headers = new Headers(getRequestHeaders())
-    const db = getDb()
-    const auth = getAuth(db)
-    const session = await auth.api.getSession({ headers })
-    if (!session) {
-      throw new AppError({
-        code: 'UNAUTHENTICATED',
-        message: 'Sign in to continue.',
+  ({ next }) =>
+    withDb(async (db) => {
+      const headers = new Headers(getRequestHeaders())
+      const auth = getAuth(db)
+      const session = await auth.api.getSession({ headers })
+      if (!session) {
+        throw new AppError({
+          code: 'UNAUTHENTICATED',
+          message: 'Sign in to continue.',
+        })
+      }
+      const { id, name, email } = session.user
+      return next({
+        context: {
+          auth,
+          db,
+          headers,
+          user: { id, name, email } satisfies SessionUser,
+          activeWorkspaceId: session.session.activeOrganizationId ?? null,
+        },
       })
-    }
-    const { id, name, email } = session.user
-    return next({
-      context: {
-        auth,
-        db,
-        headers,
-        user: { id, name, email } satisfies SessionUser,
-        activeWorkspaceId: session.session.activeOrganizationId ?? null,
-      },
-    })
-  },
+    }),
 )
 
 /**
