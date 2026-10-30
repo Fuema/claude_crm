@@ -68,6 +68,11 @@ anything that renders user-supplied content.
 
 - Every function validates input with Zod and requires a session (except the
   session check itself).
+- **CSRF:** `createCsrfMiddleware` (request middleware in `src/start.ts`)
+  refuses server-function requests from another site (checks
+  `Sec-Fetch-Site`, then `Origin`, then `Referer`). An E2E test replays a
+  real call with a foreign origin and expects 403. Better Auth's own routes
+  check the origin themselves.
 - Mutations use `POST`. TanStack Start's server-function requests are
   same-origin; do not add permissive CORS.
 - Never return Prisma rows directly; map to models so internal columns stay

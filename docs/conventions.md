@@ -75,6 +75,10 @@ in sync with `docs/project.md` (Section 1).
   first, and a browser's own locale would format differently and break
   hydration. Never call `toLocaleString()` or `Intl.*` with the default
   locale in components.
+- "Today" in a component comes from `useTodayIsoDate()` (`hooks/use-today.ts`),
+  which is `null` until the page has hydrated: the server's date (UTC) can
+  differ from the user's. Show date-dependent hints (e.g. "Overdue") only
+  when it is set.
 - Light and dark themes come from the CSS variables. Never use `dark:`
   overrides with hardcoded colors.
 - Keep class lists readable; if a pattern repeats, extract a component
@@ -119,6 +123,8 @@ gets a `getServerSnapshot` (see `hooks/use-mobile.ts`).
 | `RouteError` / `NotFound` | Already provided by the router defaults (see `docs/architecture.md`); do not duplicate them in a feature.                                                                                   |
 | `TextField`               | A labelled text input bound to a react-hook-form field (label, description, and error linked).                                                                                              |
 | `CenteredCard`            | A page outside the app shell (sign-in, sign-up, invitations): one card, as the page's `<main>`.                                                                                             |
+| `SelectField`             | A labelled shadcn Select bound to a react-hook-form field; `emptyLabel` offers "no choice" (e.g. "No contact").                                                                             |
+| `TextareaField`           | A labelled multi-line text field bound to a react-hook-form field (e.g. notes).                                                                                                             |
 
 #### Data Table Contract
 

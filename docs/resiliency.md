@@ -13,8 +13,10 @@ built. Record that in the section's **Status**.
 verification link (docs/project.md, rule 23).
 
 - `@upstash/redis` over **REST** (works in Workers; no TCP connection), with
-  our own fixed one-minute window in `src/server/rate-limit.ts`: `INCR` plus
-  `EXPIRE` in one transaction per `rl:auth:<ip>:<minute>` key.
+  our own fixed one-minute window in `src/server/rate-limit.ts`: `INCR`, then
+  `EXPIRE … NX`, per `rl:auth:<ip>:<minute>` key. No `MULTI`: the local REST
+  emulator shares one Redis connection, so concurrent transactions collided
+  and the limiter failed open (a test now sends 15 requests at once).
   `@upstash/ratelimit` is not used: its Lua scripts need an Upstash-only flag
   and fail on any other Redis (ADR 0003).
 - Applied in the `signUpWithWorkspace` server function and in the Better Auth

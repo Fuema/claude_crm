@@ -90,7 +90,8 @@ For significant UI changes:
   - `signUpAndVerify(page, …)` ends signed in on the home page.
 - Both projects run: `desktop` (Chrome) and `mobile` (Pixel 7), with
   reduced motion (no animations, so accessibility scans never see an element
-  mid-fade) and a 60-second limit per test.
+  mid-fade), a 60-second limit per test, and 10 seconds per assertion (the
+  dev server compiles a server function on its first call after a change).
 - Before E2E after a schema change, restart the dev server with
   `bun run dev -- --force`: the regenerated Prisma client leaves Vite's
   pre-bundle cache stale, and server functions fail until it is rebuilt.
